@@ -23,10 +23,10 @@ Matrix4::Matrix4(Vector4 A, Vector4 B, Vector4 C, Vector4 D)
 
 Matrix4::~Matrix4()
 {
-	if (matrix4 != nullptr){
+	/*if (matrix4 != nullptr){
 		delete[] matrix4;
 		matrix4 = nullptr;
-	}
+	}*/
 }
 
 void Matrix4::setMatrix4(float m00, float m01, float m02, float m03, float m10, float m11, float m12, float m13, float m20, float m21, float m22, float m23, float m30, float m31, float m32, float m33)

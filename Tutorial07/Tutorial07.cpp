@@ -71,6 +71,7 @@ XMMATRIX                            g_View;
 XMMATRIX                            g_Projection;
 XMFLOAT4                            g_vMeshColor( 0.7f, 0.7f, 0.7f, 1.0f );
 
+Camera                              camera;
 
 //--------------------------------------------------------------------------------------
 // Forward declarations
@@ -79,8 +80,9 @@ HRESULT InitWindow( HINSTANCE hInstance, int nCmdShow );
 HRESULT InitDevice();
 void CleanupDevice();
 LRESULT CALLBACK    WndProc( HWND, UINT, WPARAM, LPARAM );
-void Render();
 
+void Render();
+void Update();
 
 //--------------------------------------------------------------------------------------
 // Entry point to the program. Initializes everything and goes into a message processing 
@@ -111,6 +113,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
         }
         else
         {
+            Update();
             Render();
         }
     }
@@ -484,7 +487,6 @@ HRESULT InitDevice()
     // Initialize the world matrices
     g_World = XMMatrixIdentity();
 
-    Camera camera;
     camera.setEye(0.0f, 3.0f, -6.0f);
     camera.setAt(0.0f, 1.0f, 0.0f);
     camera.setUp(0.0f, 1.0f, 0.0f);
@@ -509,11 +511,11 @@ HRESULT InitDevice()
     //g_Projection = XMMatrixPerspectiveFovLH( XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
     //g_Projection = XMMatrixOrthographicLH(width, height, 0.01f, 100.0f);
 
-    //camera.setMatrixPerspective(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
-    //g_Projection = XMMATRIX(camera.getMatrixPerspective().matrix4);
+    camera.setMatrixPerspective(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
+    g_Projection = XMMATRIX(camera.getMatrixPerspective().matrix4);
 
-    camera.setMatrixOrthographic(width/100, height/100, 0.01f, 100.0f);
-    g_Projection = XMMATRIX(camera.getMatrixOrthographic().matrix4);
+    //camera.setMatrixOrthographic(width/100, height/100, 0.01f, 100.0f);
+    //g_Projection = XMMATRIX(camera.getMatrixOrthographic().matrix4);
     
 
     CBChangeOnResize cbChangesOnResize;
@@ -555,56 +557,102 @@ void CleanupDevice()
 //--------------------------------------------------------------------------------------
 LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
 {
-    PAINTSTRUCT ps;
-    HDC hdc;
+	PAINTSTRUCT ps;
+	HDC hdc;
 
-    switch( message )
-    {
-        case WM_PAINT:
-            hdc = BeginPaint( hWnd, &ps );
-            EndPaint( hWnd, &ps );
+	switch (message)
+	{
+	case WM_PAINT:
+		hdc = BeginPaint(hWnd, &ps);
+		EndPaint(hWnd, &ps);
+		break;
+
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		break;
+
+
+	case WM_KEYDOWN: {
+		UINT key = LOWORD(wParam);
+		switch (key)
+		{
+		case 37:    //Left key 
+			camera.move(-1, 0, 0);
+			break;
+		case 38:    //Up key
+			camera.move(0, 1, 0);
+			break;
+		case 39:    //Right key
+			camera.move(1, 0, 0);
+			break;
+		case 40:    //Down key 
+			camera.move(0, -1, 0);
+			break;
+        case 'A':    //Key A
+            camera.move(0, 0, 1);
             break;
-
-        case WM_DESTROY:
-            PostQuitMessage( 0 );
+        case 'D':
+            camera.move(0, 0, -1);
             break;
-
-        default:
-            return DefWindowProc( hWnd, message, wParam, lParam );
-    }
-
-    return 0;
+		default:
+			break;
+		}
+	}
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+	return 0;
 }
 
 
+void Update()
+{
+	// Update our time
+	static float t = 0.0f;
+	if (g_driverType == D3D_DRIVER_TYPE_REFERENCE)
+	{
+		t += (float)XM_PI * 0.0125f;
+	}
+	else
+	{
+		static DWORD dwTimeStart = 0;
+		DWORD dwTimeCur = GetTickCount();
+		if (dwTimeStart == 0)
+			dwTimeStart = dwTimeCur;
+		t = (dwTimeCur - dwTimeStart) / 1000.0f;
+	}
+
+	// Rotate cube around the origin
+	g_World = XMMatrixRotationY(t);
+
+	// Modify the color
+	g_vMeshColor.x = (sinf(t * 1.0f) + 1.0f) * 0.5f;
+	g_vMeshColor.y = (cosf(t * 3.0f) + 1.0f) * 0.5f;
+	g_vMeshColor.z = (sinf(t * 5.0f) + 1.0f) * 0.5f;
+
+	//
+    // Update variables that change once per frame
+    //
+	CBChangesEveryFrame cb;
+	XMMATRIX trans( 1.0f, 0.0f, 0.0f, 0.0f,
+		            0.0f, 1.0f, 0.0f, 0.0f,
+		            0.0f, 0.0f, 1.0f, 0.0f,
+		            0.0f, 0.0f, 2.0f, 1.0f);
+	cb.mWorld = XMMatrixMultiplyTranspose(g_World, trans);
+	cb.vMeshColor = g_vMeshColor;
+	g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0);
+
+	g_View = XMMATRIX(camera.getViewMatrix().matrix4);
+	CBNeverChanges cbNeverChanges;
+	cbNeverChanges.mView = XMMatrixTranspose(g_View);
+	g_pImmediateContext->UpdateSubresource(g_pCBNeverChanges, 0, NULL, &cbNeverChanges, 0, 0);
+
+}
 //--------------------------------------------------------------------------------------
 // Render a frame
 //--------------------------------------------------------------------------------------
 void Render()
 {
-    // Update our time
-    static float t = 0.0f;
-    if( g_driverType == D3D_DRIVER_TYPE_REFERENCE )
-    {
-        t += ( float )XM_PI * 0.0125f;
-    }
-    else
-    {
-        static DWORD dwTimeStart = 0;
-        DWORD dwTimeCur = GetTickCount();
-        if( dwTimeStart == 0 )
-            dwTimeStart = dwTimeCur;
-        t = ( dwTimeCur - dwTimeStart ) / 1000.0f;
-    }
-
-    // Rotate cube around the origin
-    g_World = XMMatrixRotationY( t );
-
-    // Modify the color
-    g_vMeshColor.x = ( sinf( t * 1.0f ) + 1.0f ) * 0.5f;
-    g_vMeshColor.y = ( cosf( t * 3.0f ) + 1.0f ) * 0.5f;
-    g_vMeshColor.z = ( sinf( t * 5.0f ) + 1.0f ) * 0.5f;
-
     //
     // Clear the back buffer
     //
@@ -619,10 +667,10 @@ void Render()
     //
     // Update variables that change once per frame
     //
-    CBChangesEveryFrame cb;
+    /*CBChangesEveryFrame cb;
     cb.mWorld = XMMatrixTranspose( g_World );
     cb.vMeshColor = g_vMeshColor;
-    g_pImmediateContext->UpdateSubresource( g_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0 );
+    g_pImmediateContext->UpdateSubresource( g_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0 );*/
 
     //
     // Render the cube

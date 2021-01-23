@@ -19,6 +19,13 @@ public:
 	~Camera();
 
 private:
+
+	//------- Up, Right, Front ----------- //
+	Vector3 axisX; // Right
+	Vector3 axisY; // Front
+	Vector3 axisZ; // Up
+
+
 	// ------------- View Matrix -------------- //
 	Matrix4* viewMatrix;
 	Vector3* eye;
@@ -41,6 +48,9 @@ private:
 	float* orthoFarZ;
 
 public:
+
+	void move(float x, float y, float z);
+	void update();
 	// ------------- View Matrix -------------- //
 
 	//Getters
@@ -101,6 +111,6 @@ public:
 	void setOrthoFarZ(float _orthoFarZ) { orthoFarZ = new float(_orthoFarZ); };
 
 private:
-	
+
 };
 

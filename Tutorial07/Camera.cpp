@@ -5,6 +5,11 @@ Camera::Camera()
 	eye = new Vector3(0, 0, 0);
 	at = new Vector3(0, 0, 0);
 	up = new Vector3(0, 0, 0);
+
+	fovAngleY = new float(0);
+	aspectRatio = new float(0);
+	persNearZ = new float(0);
+	persFarZ = new float(0);
 }
 
 Camera::Camera(Vector3 _eye, Vector3 _at, Vector3 _up)
@@ -16,7 +21,7 @@ Camera::Camera(Vector3 _eye, Vector3 _at, Vector3 _up)
 
 Camera::~Camera()
 {
-	if (eye != nullptr){
+	if (eye != nullptr) {
 		delete eye;
 		eye = nullptr;
 	}
@@ -30,22 +35,47 @@ Camera::~Camera()
 	}
 }
 
+void Camera::move(float x, float y, float z)
+{
+	Vector3 A = VecMath::multiply3(x, axisX);
+	Vector3 B = VecMath::multiply3(y, axisY);
+	Vector3 C = VecMath::multiply3(z, axisZ);
+
+	*eye = VecMath::add3(A, *eye);
+	*eye = VecMath::add3(B, *eye);
+	*eye = VecMath::add3(C, *eye);
+	
+	*at = VecMath::add3(A, *at);
+	*at = VecMath::add3(B, *at);
+	*at = VecMath::add3(C, *at);
+
+	setViewMatrix();
+	//setMatrixPerspective(*persFarZ, *aspectRatio, *persNearZ, *persFarZ);
+}
+
+void Camera::update()
+{
+	//setViewMatrix();
+	//setMatrixPerspective();
+	//setMatrixOrthographic();
+}
+
 void Camera::setViewMatrix()
 {
-	Vector3 axisZ = VecMath::normalize3(VecMath::substarct3(*at, *eye));
-	Vector3 axisX = VecMath::normalize3(VecMath::crossProduct3(*up, axisZ));
-	Vector3 axisY = VecMath::crossProduct3(axisZ, axisX);
+	axisZ = VecMath::normalize3(VecMath::substarct3(*at, *eye));
+	axisX = VecMath::normalize3(VecMath::crossProduct3(*up, axisZ));
+	axisY = VecMath::crossProduct3(axisZ, axisX);
 
 	viewMatrix = new Matrix4(	axisX.getX(), axisY.getX(), axisZ.getX(), 0,
 								axisX.getY(), axisY.getY(), axisZ.getY(), 0,
 								axisX.getZ(), axisY.getZ(), axisZ.getZ(), 0,
-								-VecMath::dotProduct3(axisX,*eye), -VecMath::dotProduct3(axisY,*eye),-VecMath::dotProduct3(axisZ,*eye), 1);
+								-VecMath::dotProduct3(axisX, *eye), -VecMath::dotProduct3(axisY, *eye), -VecMath::dotProduct3(axisZ, *eye), 1);
 }
 void Camera::setViewMatrix(Vector3 _eye, Vector3 _at, Vector3 _up)
 {
-	Vector3 axisZ = VecMath::normalize3(VecMath::substarct3(_at, _eye));
-	Vector3 axisX = VecMath::normalize3(VecMath::crossProduct3(_up, axisZ));
-	Vector3 axisY = VecMath::crossProduct3(axisZ, axisX);
+	axisZ = VecMath::normalize3(VecMath::substarct3(_at, _eye));
+	axisX = VecMath::normalize3(VecMath::crossProduct3(_up, axisZ));
+	axisY = VecMath::crossProduct3(axisZ, axisX);
 
 	viewMatrix = new Matrix4(axisX.getX(), axisY.getX(), axisZ.getX(), 0,
 		axisX.getY(), axisY.getY(), axisZ.getY(), 0,
@@ -55,6 +85,11 @@ void Camera::setViewMatrix(Vector3 _eye, Vector3 _at, Vector3 _up)
 
 void Camera::setMatrixPerspective(float _fovAngleY, float _aspectRatio, float _persNearZ, float _persFarZ)
 {
+	 *fovAngleY = _fovAngleY;
+	 *aspectRatio = _aspectRatio;
+	 *persNearZ = _persNearZ;
+	 *persFarZ = _persFarZ;
+
 	float SinFov, CosFov, Height, Width;
 
 	SinFov = sin(_fovAngleY / 2);
