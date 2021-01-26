@@ -19,7 +19,7 @@ namespace VecMath
 
 	//substarct vectors
 	Vector3 substarct3(Vector3 A, Vector3 B) {
-		return  Vector3(A.getX() - B.getX(), A.getY() - B.getY(), A.getZ() - B.getZ());
+		return  Vector3((A.getX() - B.getX()), (A.getY() - B.getY()), (A.getZ() - B.getZ()));
 	}
 	Vector4 substarct4(Vector4 A, Vector4 B) {
 		return Vector4(A.getX() - B.getX(), A.getY() - B.getY(), A.getZ() - B.getZ(), A.getW() - B.getW());
@@ -31,6 +31,11 @@ namespace VecMath
 	}
 	Vector4 multiply4(float x, Vector4 A){
 		return Vector4(x * A.getX(), x * A.getY(), x * A.getZ(), x*A.getW());
+	}
+
+	//multiply vectors
+	Vector3 divide3( Vector3 A, float x) {
+		return Vector3(A.getX() / x, A.getY() / x, A.getZ() / x);
 	}
 
 	//magnitude of a vector

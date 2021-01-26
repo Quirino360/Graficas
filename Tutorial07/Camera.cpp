@@ -10,6 +10,8 @@ Camera::Camera()
 	aspectRatio = new float(0);
 	persNearZ = new float(0);
 	persFarZ = new float(0);
+
+	fFrame = true;
 }
 
 Camera::Camera(Vector3 _eye, Vector3 _at, Vector3 _up)
@@ -33,6 +35,20 @@ Camera::~Camera()
 		delete up;
 		up = nullptr;
 	}
+}
+
+void Camera::RotateCamera(Vector3 lpnew, Vector3 lpold)
+{
+	if (!fFrame)// skip first frame
+	{
+		Vector3 newAt = VecMath::substarct3(lpnew, lpold);
+		newAt = VecMath::divide3(newAt, 100);
+
+		setAt(VecMath::add3(*at, newAt));
+
+		setViewMatrix();
+	}
+	fFrame = false;
 }
 
 void Camera::move(float x, float y, float z)

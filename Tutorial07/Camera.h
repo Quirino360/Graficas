@@ -20,6 +20,7 @@ public:
 
 private:
 
+	bool fFrame;
 	//------- Up, Right, Front ----------- //
 	Vector3 axisX; // Right
 	Vector3 axisY; // Front
@@ -48,6 +49,9 @@ private:
 	float* orthoFarZ;
 
 public:
+
+
+	void RotateCamera(Vector3 lpnew, Vector3 lpold);
 
 	void move(float x, float y, float z);
 	void update();

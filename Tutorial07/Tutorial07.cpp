@@ -72,6 +72,10 @@ XMMATRIX                            g_Projection;
 XMFLOAT4                            g_vMeshColor( 0.7f, 0.7f, 0.7f, 1.0f );
 
 Camera                              camera;
+LPPOINT                             newCursor = new POINT();
+LPPOINT                             oldCursor = new POINT();
+bool                                cameraChange = true;
+
 
 //--------------------------------------------------------------------------------------
 // Forward declarations
@@ -511,12 +515,16 @@ HRESULT InitDevice()
     //g_Projection = XMMatrixPerspectiveFovLH( XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
     //g_Projection = XMMatrixOrthographicLH(width, height, 0.01f, 100.0f);
 
-    camera.setMatrixPerspective(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
-    g_Projection = XMMATRIX(camera.getMatrixPerspective().matrix4);
-
-    //camera.setMatrixOrthographic(width/100, height/100, 0.01f, 100.0f);
-    //g_Projection = XMMATRIX(camera.getMatrixOrthographic().matrix4);
-    
+    if (cameraChange)
+    {
+		camera.setMatrixPerspective(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
+		g_Projection = XMMATRIX(camera.getMatrixPerspective().matrix4);
+    }
+    else
+    {
+		camera.setMatrixOrthographic(width / 100, height / 100, 0.01f, 100.0f);
+		g_Projection = XMMATRIX(camera.getMatrixOrthographic().matrix4);
+    }
 
     CBChangeOnResize cbChangesOnResize;
     cbChangesOnResize.mProjection = XMMatrixTranspose( g_Projection );
@@ -594,10 +602,18 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
         case 'D':
             camera.move(0, 0, -1);
             break;
+
+        case 9:     //Tab 
+            cameraChange = !cameraChange;
+            InitDevice();
+            break;
+
 		default:
 			break;
 		}
 	}
+
+
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
@@ -622,6 +638,12 @@ void Update()
 		t = (dwTimeCur - dwTimeStart) / 1000.0f;
 	}
 
+    
+    *oldCursor = *newCursor;
+    GetCursorPos(newCursor);
+    camera.RotateCamera(Vector3(newCursor->x, newCursor->y, 0), Vector3(oldCursor->x, oldCursor->y, 0));
+
+
 	// Rotate cube around the origin
 	g_World = XMMatrixRotationY(t);
 
@@ -638,6 +660,7 @@ void Update()
 		            0.0f, 1.0f, 0.0f, 0.0f,
 		            0.0f, 0.0f, 1.0f, 0.0f,
 		            0.0f, 0.0f, 2.0f, 1.0f);
+
 	cb.mWorld = XMMatrixMultiplyTranspose(g_World, trans);
 	cb.vMeshColor = g_vMeshColor;
 	g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0);
