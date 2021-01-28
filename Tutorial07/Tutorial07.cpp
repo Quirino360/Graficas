@@ -14,6 +14,7 @@
 
 #include "Camera.h"
 #include "Vector3.h"
+#include "Mesh.h"
 
 //XMMatrixLookAtLH()
 
@@ -72,6 +73,8 @@ XMMATRIX                            g_Projection;
 XMFLOAT4                            g_vMeshColor( 0.7f, 0.7f, 0.7f, 1.0f );
 
 Camera                              camera;
+Mesh                                mesh;
+
 LPPOINT                             newCursor = new POINT();
 LPPOINT                             oldCursor = new POINT();
 bool                                cameraChange = true;
@@ -152,7 +155,7 @@ HRESULT InitWindow( HINSTANCE hInstance, int nCmdShow )
 
     // Create window
     g_hInst = hInstance;
-    RECT rc = { 0, 0, 640, 480 };
+    RECT rc = { 0, 0, 1920, 1080 }; // window size
     AdjustWindowRect( &rc, WS_OVERLAPPEDWINDOW, FALSE );
     g_hWnd = CreateWindow( L"TutorialWindowClass", L"Direct3D 11 Tutorial 7", WS_OVERLAPPEDWINDOW,
                            CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, NULL, NULL, hInstance,
@@ -360,54 +363,59 @@ HRESULT InitDevice()
         return hr;
 
     // Create vertex buffer
-    SimpleVertex vertices[] =
-    {
-        { XMFLOAT3( -1.0f, 1.0f, -1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, 1.0f, -1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, 1.0f, 1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
-        { XMFLOAT3( -1.0f, 1.0f, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
 
-        { XMFLOAT3( -1.0f, -1.0f, -1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, -1.0f, -1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, -1.0f, 1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
-        { XMFLOAT3( -1.0f, -1.0f, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
+    //ctrl + h 
+	Vertex vertices[] =
+	{
+		{ Vec3{-1.0f, 1.0f, -1.0f}, Vec2{0.0f, 0.0f} },
+		{ Vec3{1.0f, 1.0f, -1.0f}, Vec2{1.0f, 0.0f} },
+		{ Vec3{1.0f, 1.0f, 1.0f}, Vec2{1.0f, 1.0f} },
+		{ Vec3{-1.0f, 1.0f, 1.0f}, Vec2{0.0f, 1.0f} },
 
-        { XMFLOAT3( -1.0f, -1.0f, 1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
-        { XMFLOAT3( -1.0f, -1.0f, -1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
-        { XMFLOAT3( -1.0f, 1.0f, -1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
-        { XMFLOAT3( -1.0f, 1.0f, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
+		{ Vec3{-1.0f, -1.0f, -1.0f}, Vec2{0.0f, 0.0f} },
+		{ Vec3{1.0f, -1.0f, -1.0f}, Vec2{1.0f, 0.0f} },
+		{ Vec3{1.0f, -1.0f, 1.0f}, Vec2{1.0f, 1.0f} },
+		{ Vec3{-1.0f, -1.0f, 1.0f}, Vec2{0.0f, 1.0f} },
 
-        { XMFLOAT3( 1.0f, -1.0f, 1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, -1.0f, -1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, 1.0f, -1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
-        { XMFLOAT3( 1.0f, 1.0f, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
+		{ Vec3{-1.0f, -1.0f, 1.0f}, Vec2{0.0f, 0.0f} },
+		{ Vec3{-1.0f, -1.0f, -1.0f}, Vec2{1.0f, 0.0f} },
+		{ Vec3{-1.0f, 1.0f, -1.0f}, Vec2{1.0f, 1.0f} },
+		{ Vec3{-1.0f, 1.0f, 1.0f}, Vec2{0.0f, 1.0f} },
 
-        { XMFLOAT3( -1.0f, -1.0f, -1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, -1.0f, -1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, 1.0f, -1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
-        { XMFLOAT3( -1.0f, 1.0f, -1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
+		{ Vec3{1.0f, -1.0f, 1.0f}, Vec2{0.0f, 0.0f} },
+		{ Vec3{1.0f, -1.0f, -1.0f}, Vec2{1.0f, 0.0f} },
+		{ Vec3{1.0f, 1.0f, -1.0f}, Vec2{1.0f, 1.0f} },
+		{ Vec3{1.0f, 1.0f, 1.0f}, Vec2{0.0f, 1.0f} },
 
-        { XMFLOAT3( -1.0f, -1.0f, 1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, -1.0f, 1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
-        { XMFLOAT3( 1.0f, 1.0f, 1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
-        { XMFLOAT3( -1.0f, 1.0f, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
-    };
+		{ Vec3{-1.0f, -1.0f, -1.0f}, Vec2{0.0f, 0.0f} },
+		{ Vec3{1.0f, -1.0f, -1.0f}, Vec2{1.0f, 0.0f} },
+		{ Vec3{1.0f, 1.0f, -1.0f}, Vec2{1.0f, 1.0f} },
+		{ Vec3{-1.0f, 1.0f, -1.0f}, Vec2{0.0f, 1.0f} },
+
+		{ Vec3{-1.0f, -1.0f, 1.0f}, Vec2{0.0f, 0.0f} },
+		{ Vec3{1.0f, -1.0f, 1.0f}, Vec2{1.0f, 0.0f} },
+		{ Vec3{1.0f, 1.0f, 1.0f}, Vec2{1.0f, 1.0f} },
+		{ Vec3{-1.0f, 1.0f, 1.0f}, Vec2{0.0f, 1.0f} },
+	};
+
+
+    mesh.setVetices(vertices, 24); 
 
     D3D11_BUFFER_DESC bd;
     ZeroMemory( &bd, sizeof(bd) );
     bd.Usage = D3D11_USAGE_DEFAULT;
-    bd.ByteWidth = sizeof( SimpleVertex ) * 24;
+    bd.ByteWidth = sizeof( Vertex ) * 24; // mi vertex 
     bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     bd.CPUAccessFlags = 0;
     D3D11_SUBRESOURCE_DATA InitData;
     ZeroMemory( &InitData, sizeof(InitData) );
-    InitData.pSysMem = vertices;
+    InitData.pSysMem = mesh.getVertices(); // mi vertices 
     hr = g_pd3dDevice->CreateBuffer( &bd, &InitData, &g_pVertexBuffer );
     if( FAILED( hr ) )
         return hr;
 
     // Set vertex buffer
-    UINT stride = sizeof( SimpleVertex );
+    UINT stride = sizeof( Vertex ); //mi vertex 
     UINT offset = 0;
     g_pImmediateContext->IASetVertexBuffers( 0, 1, &g_pVertexBuffer, &stride, &offset );
 
@@ -434,12 +442,13 @@ HRESULT InitDevice()
         23,20,22
     };
 
-    
+    mesh.setIndexBuffer(indices, 36);
+
     bd.Usage = D3D11_USAGE_DEFAULT;
-    bd.ByteWidth = sizeof( WORD ) * 36;
+    bd.ByteWidth = sizeof( unsigned short ) * 36;
     bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
     bd.CPUAccessFlags = 0;
-    InitData.pSysMem = indices;
+    InitData.pSysMem = mesh.getIndexBuffer(); // mis indices 
     hr = g_pd3dDevice->CreateBuffer( &bd, &InitData, &g_pIndexBuffer );
     if( FAILED( hr ) )
         return hr;
@@ -489,20 +498,18 @@ HRESULT InitDevice()
         return hr;
 
     // Initialize the world matrices
-    g_World = XMMatrixIdentity();
 
-    camera.setEye(0.0f, 3.0f, -6.0f);
-    camera.setAt(0.0f, 1.0f, 0.0f);
-    camera.setUp(0.0f, 1.0f, 0.0f);
-
-    camera.setViewMatrix();
 
     // Initialize the view matrix
-    XMVECTOR Eye = XMVectorSet( 0.0f, 3.0f, -6.0f, 0.0f );
-    XMVECTOR At = XMVectorSet( 0.0f, 1.0f, 0.0f, 0.0f );
-    XMVECTOR Up = XMVectorSet( 0.0f, 1.0f, 0.0f, 0.0f );
+	g_World = XMMatrixIdentity();
 
-    //g_View = XMMatrixLookAtLH( Eye, At, Up );
+	camera.setEye(0.0f, 3.0f, -6.0f);
+	camera.setAt(0.0f, 1.0f, 0.0f);
+	camera.setUp(0.0f, 1.0f, 0.0f);
+
+	camera.setViewMatrix();
+
+
     g_View = XMMATRIX(camera.getViewMatrix().matrix4);
     
 
@@ -511,10 +518,6 @@ HRESULT InitDevice()
     g_pImmediateContext->UpdateSubresource( g_pCBNeverChanges, 0, NULL, &cbNeverChanges, 0, 0 );
 
     // Initialize the projection matrix
-
-    //g_Projection = XMMatrixPerspectiveFovLH( XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
-    //g_Projection = XMMatrixOrthographicLH(width, height, 0.01f, 100.0f);
-
     if (cameraChange)
     {
 		camera.setMatrixPerspective(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
@@ -690,10 +693,7 @@ void Render()
     //
     // Update variables that change once per frame
     //
-    /*CBChangesEveryFrame cb;
-    cb.mWorld = XMMatrixTranspose( g_World );
-    cb.vMeshColor = g_vMeshColor;
-    g_pImmediateContext->UpdateSubresource( g_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0 );*/
+    CBChangesEveryFrame cb;
 
     //
     // Render the cube
@@ -706,8 +706,30 @@ void Render()
     g_pImmediateContext->PSSetConstantBuffers( 2, 1, &g_pCBChangesEveryFrame );
     g_pImmediateContext->PSSetShaderResources( 0, 1, &g_pTextureRV );
     g_pImmediateContext->PSSetSamplers( 0, 1, &g_pSamplerLinear );
+
+    
+	cb.mWorld = XMMatrixTranspose(g_World);
+	cb.vMeshColor = g_vMeshColor;
+	g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0);
     g_pImmediateContext->DrawIndexed( 36, 0, 0 );
 
+	g_World = XMMatrixTranslation(3, 0, 0);
+	cb.mWorld = XMMatrixTranspose(g_World);
+	cb.vMeshColor = g_vMeshColor;
+	g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0);
+    g_pImmediateContext->DrawIndexed(36, 0, 0);
+
+	g_World = XMMatrixTranslation(0, 3, 0);
+	cb.mWorld = XMMatrixTranspose(g_World);
+	cb.vMeshColor = g_vMeshColor;
+	g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0);
+    g_pImmediateContext->DrawIndexed(36, 0, 0);
+
+	g_World = XMMatrixTranslation(-3, 0, 0);
+	cb.mWorld = XMMatrixTranspose(g_World);
+	cb.vMeshColor = g_vMeshColor;
+	g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame, 0, NULL, &cb, 0, 0);
+    g_pImmediateContext->DrawIndexed(36, 0, 0);
     //
     // Present our back buffer to our front buffer
     //
