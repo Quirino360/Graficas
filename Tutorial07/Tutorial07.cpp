@@ -518,14 +518,14 @@ HRESULT InitDevice()
     g_pImmediateContext->UpdateSubresource( g_pCBNeverChanges, 0, NULL, &cbNeverChanges, 0, 0 );
 
     // Initialize the projection matrix
+    camera.setMatrixPerspective(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
+        camera.setMatrixOrthographic(width / 100, height / 100, 0.01f, 100.0f);
     if (cameraChange)
     {
-		camera.setMatrixPerspective(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
 		g_Projection = XMMATRIX(camera.getMatrixPerspective().matrix4);
     }
-    else
-    {
-		camera.setMatrixOrthographic(width / 100, height / 100, 0.01f, 100.0f);
+	else
+	{
 		g_Projection = XMMATRIX(camera.getMatrixOrthographic().matrix4);
     }
 
@@ -607,15 +607,26 @@ LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam 
             break;
 
         case 9:     //Tab 
-            cameraChange = !cameraChange;
-            InitDevice();
-            break;
+        {
+			cameraChange = !cameraChange;
+			if (cameraChange)
+			{
+				g_Projection = XMMATRIX(camera.getMatrixPerspective().matrix4);
+			}
+			else
+			{
+				g_Projection = XMMATRIX(camera.getMatrixOrthographic().matrix4);
+			}
+			CBChangeOnResize cbChangesOnResize;
+			cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
+			g_pImmediateContext->UpdateSubresource(g_pCBChangeOnResize, 0, NULL, &cbChangesOnResize, 0, 0);
+			break;
+        }
 
 		default:
 			break;
 		}
 	}
-
 
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);

@@ -12,6 +12,7 @@ public:
 			float m30, float m31, float m32, float m33);
 	Matrix4(Vector4 A, Vector4 B, Vector4 C, Vector4 D);
 	~Matrix4();
+
 	float* matrix4;
 
 private:

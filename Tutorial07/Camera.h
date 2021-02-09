@@ -68,14 +68,14 @@ public:
 	void setViewMatrix();
 	void setViewMatrix(Vector3 _eye, Vector3 _at, Vector3 _up);
 
-	void setEye(Vector3 newVec) { eye = new Vector3(newVec); };
-	void setEye(float _x, float _y, float _z) { eye = new Vector3(_x, _y, _z); };
-	void setAt(Vector3 newVec) { at = new Vector3(newVec); };
-	void setAt(float _x, float _y, float _z) { at = new Vector3(_x, _y, _z); };
-	void setUp(Vector3 newVec) { up = new Vector3(newVec); };
-	void setUp(float _x, float _y, float _z) { up = new Vector3(_x, _y, _z); };
-	void setPosition(Vector3 newVec) { position = new Vector3(newVec); };
-	void setPosition(float _x, float _y, float _z) { position = new Vector3(_x, _y, _z); };
+	void setEye(Vector3 newVec) { *eye = newVec; };
+	void setEye(float _x, float _y, float _z) { *eye = Vector3(_x, _y, _z); };
+	void setAt(Vector3 newVec) { *at = newVec; };
+	void setAt(float _x, float _y, float _z) { *at = Vector3(_x, _y, _z); };
+	void setUp(Vector3 newVec) { *up = newVec; };
+	void setUp(float _x, float _y, float _z) { *up = Vector3(_x, _y, _z); };
+	void setPosition(Vector3 newVec) { *position = newVec; };
+	void setPosition(float _x, float _y, float _z) { *position = Vector3(_x, _y, _z); };
 
 
 	// ------------ Matrix Perspective -------------- // 
@@ -88,13 +88,13 @@ public:
 	float getPersFarZ() { return *persNearZ; };
 
 	//Setters
-	void setMatrixPerspective(Matrix4 _matrixPerspective) { matrixPerspective = new Matrix4(_matrixPerspective); };
+	void setMatrixPerspective(Matrix4 _matrixPerspective) { *matrixPerspective = _matrixPerspective; };
 	void setMatrixPerspective(float _fovAngleY, float _aspectRatio, float _persNearZ, float _persFarZ);
 
-	void setFovAngleY(float _fovAngleY) { fovAngleY = new float(_fovAngleY); };
-	void setAspectRatio(float _aspectRatio) { aspectRatio = new float(_aspectRatio); };
-	void setPersNearZ(float _persNearZ) { persNearZ = new float(_persNearZ); };
-	void setPersFarZ(float _persFarZ) { persFarZ = new float(_persFarZ); };
+	void setFovAngleY(float _fovAngleY) { *fovAngleY = _fovAngleY; };
+	void setAspectRatio(float _aspectRatio) { *aspectRatio = _aspectRatio; };
+	void setPersNearZ(float _persNearZ) { *persNearZ = _persNearZ; };
+	void setPersFarZ(float _persFarZ) { *persFarZ =_persFarZ; };
 
 	// ------------ Matrix Orthographic --------------- //
 
@@ -106,13 +106,13 @@ public:
 	float getOrthoFarZ() { return *orthoFarZ; };
 
 	//Setters 
-	void setMatrixOrthographic(Matrix4 _matrixOrthographic) { matrixOrthographic = new Matrix4(_matrixOrthographic); };
+	void setMatrixOrthographic(Matrix4 _matrixOrthographic) { *matrixOrthographic = Matrix4(_matrixOrthographic); };
 	void setMatrixOrthographic(float _viewWidth, float _viewHeight, float _orthoNearZ, float _orthoFarZ);
 
-	void setViewWidth(float _viewWidth) { viewWidth = new float(_viewWidth); };
-	void setViewHeight(float _viewHeight) { viewHeight = new float(_viewHeight); };
-	void setOrthoNearZ(float _orthoNearZ) { orthoNearZ = new float(_orthoNearZ); };
-	void setOrthoFarZ(float _orthoFarZ) { orthoFarZ = new float(_orthoFarZ); };
+	void setViewWidth(float _viewWidth) { *viewWidth = _viewWidth; };
+	void setViewHeight(float _viewHeight) { *viewHeight = _viewHeight; };
+	void setOrthoNearZ(float _orthoNearZ) { *orthoNearZ = _orthoNearZ; };
+	void setOrthoFarZ(float _orthoFarZ) { *orthoFarZ = _orthoFarZ; };
 
 private:
 

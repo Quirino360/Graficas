@@ -2,38 +2,150 @@
 #include "VecMath.h"
 Camera::Camera()
 {
+	fFrame = true;
+
+	//------- Up, Right, Front ----------- //
+	axisX = Vector3(0, 0, 0); // Right
+	axisY = Vector3(0, 0, 0); // Front
+	axisZ = Vector3(0, 0, 0); // Up
+
+	// ------------- View Matrix -------------- //
+	viewMatrix = nullptr;
 	eye = new Vector3(0, 0, 0);
 	at = new Vector3(0, 0, 0);
 	up = new Vector3(0, 0, 0);
+	position = nullptr;
 
+	// ------------ Matrix Perspective -------------- // 
+	matrixPerspective = nullptr;
 	fovAngleY = new float(0);
 	aspectRatio = new float(0);
 	persNearZ = new float(0);
 	persFarZ = new float(0);
 
-	fFrame = true;
+	// ------------ Matrix Orthographic --------------- //
+	matrixOrthographic;
+	viewWidth = nullptr;
+	viewHeight = nullptr;
+	orthoNearZ = nullptr;
+	orthoFarZ = nullptr;
 }
 
 Camera::Camera(Vector3 _eye, Vector3 _at, Vector3 _up)
 {
+	fFrame = true;
+
+	//------- Up, Right, Front ----------- //
+	axisX = Vector3(0, 0, 0); // Right
+	axisY = Vector3(0, 0, 0); // Front
+	axisZ = Vector3(0, 0, 0); // Up
+
+	// ------------- View Matrix -------------- //
+	viewMatrix = nullptr;
 	eye = new Vector3(_eye);
 	at = new Vector3(_at);
 	up = new Vector3(_up);
+	position = nullptr;
+
+	// ------------ Matrix Perspective -------------- // 
+	matrixPerspective = nullptr;
+	fovAngleY = new float(0);
+	aspectRatio = new float(0);
+	persNearZ = new float(0);
+	persFarZ = new float(0);
+
+	// ------------ Matrix Orthographic --------------- //
+	matrixOrthographic;
+	viewWidth = nullptr;
+	viewHeight = nullptr;
+	orthoNearZ = nullptr;
+	orthoFarZ = nullptr;
+
+
 }
 
 Camera::~Camera()
 {
-	if (eye != nullptr) {
+	// ------------- View Matrix -------------- //
+	if (nullptr != viewMatrix)
+	{
+		delete viewMatrix;
+		viewMatrix = nullptr;
+	}
+	if (nullptr != eye)
+	{
 		delete eye;
 		eye = nullptr;
 	}
-	if (at != nullptr) {
+	if (nullptr != at)
+	{
 		delete at;
-		up = nullptr;
+		at = nullptr;
 	}
-	if (up != nullptr) {
+	if (nullptr != up)
+	{
 		delete up;
 		up = nullptr;
+	}
+	if (nullptr != position)
+	{
+		delete position;
+		position = nullptr;
+	}
+
+
+	// ------------ Matrix Perspective -------------- // 
+	if (nullptr != matrixPerspective)
+	{
+		delete matrixPerspective;
+		matrixPerspective = nullptr;
+	}
+	if (nullptr != fovAngleY)
+	{
+		delete fovAngleY;
+		fovAngleY = nullptr;
+	}
+	if (nullptr != aspectRatio)
+	{
+		delete aspectRatio;
+		aspectRatio = nullptr;
+	}
+	if (nullptr != persNearZ)
+	{
+		delete persNearZ;
+		persNearZ = nullptr;
+	}
+	if (nullptr != persFarZ)
+	{
+		delete persFarZ;
+		persFarZ = nullptr;
+	}
+
+	// ------------ Matrix Orthographic --------------- //
+	if (nullptr != matrixOrthographic)
+	{
+		delete matrixOrthographic;
+		matrixOrthographic = nullptr;
+	}
+	if (nullptr != viewWidth)
+	{
+		delete viewWidth;
+		viewWidth = nullptr;
+	}
+	if (nullptr != viewHeight)
+	{
+		delete viewHeight;
+		viewHeight = nullptr;
+	}
+	if (nullptr != orthoNearZ)
+	{
+		delete orthoNearZ;
+		orthoNearZ = nullptr;
+	}
+	if (nullptr != orthoFarZ)
+	{
+		delete orthoFarZ;
+		orthoFarZ = nullptr;
 	}
 }
 
@@ -82,10 +194,21 @@ void Camera::setViewMatrix()
 	axisX = VecMath::normalize3(VecMath::crossProduct3(*up, axisZ));
 	axisY = VecMath::crossProduct3(axisZ, axisX);
 
-	viewMatrix = new Matrix4(	axisX.getX(), axisY.getX(), axisZ.getX(), 0,
-								axisX.getY(), axisY.getY(), axisZ.getY(), 0,
-								axisX.getZ(), axisY.getZ(), axisZ.getZ(), 0,
-								-VecMath::dotProduct3(axisX, *eye), -VecMath::dotProduct3(axisY, *eye), -VecMath::dotProduct3(axisZ, *eye), 1);
+	if (nullptr == viewMatrix)
+	{
+		viewMatrix = new Matrix4(axisX.getX(), axisY.getX(), axisZ.getX(), 0,
+			axisX.getY(), axisY.getY(), axisZ.getY(), 0,
+			axisX.getZ(), axisY.getZ(), axisZ.getZ(), 0,
+			-VecMath::dotProduct3(axisX, *eye), -VecMath::dotProduct3(axisY, *eye), -VecMath::dotProduct3(axisZ, *eye), 1);
+	}
+	else
+	{
+		*viewMatrix = Matrix4(axisX.getX(), axisY.getX(), axisZ.getX(), 0,
+			axisX.getY(), axisY.getY(), axisZ.getY(), 0,
+			axisX.getZ(), axisY.getZ(), axisZ.getZ(), 0,
+			-VecMath::dotProduct3(axisX, *eye), -VecMath::dotProduct3(axisY, *eye), -VecMath::dotProduct3(axisZ, *eye), 1);
+	}
+
 }
 void Camera::setViewMatrix(Vector3 _eye, Vector3 _at, Vector3 _up)
 {
@@ -93,10 +216,19 @@ void Camera::setViewMatrix(Vector3 _eye, Vector3 _at, Vector3 _up)
 	axisX = VecMath::normalize3(VecMath::crossProduct3(_up, axisZ));
 	axisY = VecMath::crossProduct3(axisZ, axisX);
 
-	viewMatrix = new Matrix4(axisX.getX(), axisY.getX(), axisZ.getX(), 0,
-		axisX.getY(), axisY.getY(), axisZ.getY(), 0,
-		axisX.getZ(), axisY.getZ(), axisZ.getZ(), 0,
-		-VecMath::dotProduct3(axisX, _eye), -VecMath::dotProduct3(axisY, _eye), -VecMath::dotProduct3(axisZ, _eye), 1);
+	if (nullptr == viewMatrix) {
+		viewMatrix = new Matrix4(axisX.getX(), axisY.getX(), axisZ.getX(), 0,
+			axisX.getY(), axisY.getY(), axisZ.getY(), 0,
+			axisX.getZ(), axisY.getZ(), axisZ.getZ(), 0,
+			-VecMath::dotProduct3(axisX, _eye), -VecMath::dotProduct3(axisY, _eye), -VecMath::dotProduct3(axisZ, _eye), 1);
+	}
+	else {
+		*viewMatrix =  Matrix4(axisX.getX(), axisY.getX(), axisZ.getX(), 0,
+			axisX.getY(), axisY.getY(), axisZ.getY(), 0,
+			axisX.getZ(), axisY.getZ(), axisZ.getZ(), 0,
+			-VecMath::dotProduct3(axisX, _eye), -VecMath::dotProduct3(axisY, _eye), -VecMath::dotProduct3(axisZ, _eye), 1);
+	}
+
 }
 
 void Camera::setMatrixPerspective(float _fovAngleY, float _aspectRatio, float _persNearZ, float _persFarZ)
@@ -119,7 +251,10 @@ void Camera::setMatrixPerspective(float _fovAngleY, float _aspectRatio, float _p
 	Vector4 C = Vector4(0.0f, 0.0f, _persFarZ / (_persFarZ - _persNearZ), 1.0f);
 	Vector4 D = Vector4(0.0f, 0.0f, -C.getZ() * _persNearZ, 0.0f);
 
-	matrixPerspective = new Matrix4(A, B, C, D);
+	if (nullptr == matrixPerspective)
+		matrixPerspective = new Matrix4(A, B, C, D);
+	else
+		*matrixPerspective = Matrix4(A, B, C, D);
 }
 
 void Camera::setMatrixOrthographic(float _viewWidth, float _viewHeight, float _orthoNearZ, float _orthoFarZ)
@@ -133,5 +268,8 @@ void Camera::setMatrixOrthographic(float _viewWidth, float _viewHeight, float _o
 	Vector4 C = Vector4(0.0f, 0.0f, fRange, 0.0f);
 	Vector4 D = Vector4(0.0f, 0.0f, -fRange * _orthoNearZ, 1.0f);
 
-	matrixOrthographic = new Matrix4(A, B, C, D);
+	if (nullptr == matrixOrthographic)
+		matrixOrthographic = new Matrix4(A, B, C, D);
+	else
+		*matrixOrthographic = Matrix4(A, B, C, D);
 }
