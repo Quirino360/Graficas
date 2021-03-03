@@ -249,6 +249,7 @@ int main()
     }
     else
     {
+        testOBj.Update();
         Render();
     }
   }

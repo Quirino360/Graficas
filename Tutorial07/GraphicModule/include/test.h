@@ -105,7 +105,8 @@ namespace GraphicsModule
         Camera                              camera;
         Mesh                                mesh;
         bool                                cameraChange = true;
-
+        LPPOINT                             newCursor = new POINT();
+        LPPOINT                             oldCursor = new POINT();
 
 #endif
     public:
@@ -117,6 +118,7 @@ namespace GraphicsModule
 
         HRESULT InitDevice(HWND _hwnd);
 
+        void Update();
         void Render();
 
         void CleanupDevice();

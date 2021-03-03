@@ -443,9 +443,8 @@ namespace GraphicsModule
         return S_OK;
     }
 
-    void test::Render()
+    void test::Update()
     {
-#if defined(DX11)
         // Update our time
         static float t = 0.0f;
         if (g_driverType == D3D_DRIVER_TYPE_REFERENCE)
@@ -461,6 +460,10 @@ namespace GraphicsModule
             t = (dwTimeCur - dwTimeStart) / 1000.0f;
         }
 
+        *oldCursor = *newCursor;
+        GetCursorPos(newCursor);
+        camera.RotateCamera(Vector3(newCursor->x, newCursor->y, 0), Vector3(oldCursor->x, oldCursor->y, 0));
+
         // Rotate cube around the origin
         g_World = XMMatrixRotationY(t);
 
@@ -468,6 +471,7 @@ namespace GraphicsModule
         g_vMeshColor.x = (sinf(t * 1.0f) + 1.0f) * 0.5f;
         g_vMeshColor.y = (cosf(t * 3.0f) + 1.0f) * 0.5f;
         g_vMeshColor.z = (sinf(t * 5.0f) + 1.0f) * 0.5f;
+
 
         //
         // Clear the back buffer
@@ -488,7 +492,27 @@ namespace GraphicsModule
         cb.vMeshColor = g_vMeshColor;
         g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
 
+        CBNeverChanges cbNeverChanges;
+        cbNeverChanges.mView = XMMatrixTranspose(g_View);
+        g_pImmediateContext->UpdateSubresource(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
 
+        CBChangeOnResize cbChangesOnResize;
+        cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
+        g_pImmediateContext->UpdateSubresource(g_pCBChangeOnResize->getyBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
+
+        // Move the mouse updating the position
+        g_View = XMMATRIX(camera.getViewMatrix().matrix4);
+        cbNeverChanges.mView = XMMatrixTranspose(g_View);
+        g_pImmediateContext->UpdateSubresource(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
+
+
+
+    }
+
+    void test::Render()
+    {
+#if defined(DX11)
+        
         UINT stride = sizeof(SimpleVertex);
         UINT offset = 0;
 
