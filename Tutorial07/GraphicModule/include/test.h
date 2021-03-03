@@ -1,117 +1,128 @@
 #pragma once
 
 #include <windows.h>
+
+
+#if defined(DX11)
+#include <d3d11.h>
+#include <d3dx11.h>
+#include <d3dcompiler.h>
+#include <xnamath.h>
+#endif
+
+#include "Mesh.h"
 #include "Buffer.h"
 #include "Texture2D.h"
 
-#if defined(DX11)
-    #include <d3d11.h>
-    #include <d3dx11.h>
-    #include <d3dcompiler.h>
-    #include <xnamath.h>
-#endif
-
 namespace GraphicsModule
 {
-  struct VIEWPORT
-  {
+    struct VIEWPORT
+    {
 #if defined(DX11)
-      float TopLeftX;
-      float TopLeftY;
-      float Width;
-      float Height;
-      float MinDepth;
-      float MaxDepth;
+        float TopLeftX;
+        float TopLeftY;
+        float Width;
+        float Height;
+        float MinDepth;
+        float MaxDepth;
 #endif
-  };
+    };
 
-  struct SimpleVertex
-  {
+    struct SimpleVertex
+    {
 #if defined(DX11)
-    XMFLOAT3 Pos;
-    XMFLOAT2 Tex;
+        XMFLOAT3 Pos;
+        XMFLOAT2 Tex;
 #endif
-  };
+    };
 
-  struct CBNeverChanges
-  {
+    struct CBNeverChanges
+    {
 #if defined(DX11)
-    XMMATRIX mView;
+        XMMATRIX mView;
 #endif
-  };
+    };
 
-  struct CBChangeOnResize
-  {
+    struct CBChangeOnResize
+    {
 #if defined(DX11)
-    XMMATRIX mProjection;
+        XMMATRIX mProjection;
 #endif
-  };
+    };
 
-  struct CBChangesEveryFrame
-  {
+    struct CBChangesEveryFrame
+    {
 #if defined(DX11)
-    XMMATRIX mWorld;
-    XMFLOAT4 vMeshColor;
+        XMMATRIX mWorld;
+        XMFLOAT4 vMeshColor;
 #endif
-  };
+    };
 
-  class test
-  {
-  public:
+    class test
+    {
+    public:
 #if defined(DX11)
-    D3D_DRIVER_TYPE                     g_driverType = D3D_DRIVER_TYPE_NULL;
-    D3D_FEATURE_LEVEL                   g_featureLevel = D3D_FEATURE_LEVEL_11_0;
-    ID3D11Device*                       g_pd3dDevice = NULL;
-    ID3D11DeviceContext*                g_pImmediateContext = NULL;
-    IDXGISwapChain*                     g_pSwapChain = NULL;
-    ID3D11RenderTargetView*             g_pRenderTargetView = NULL;
+        D3D_DRIVER_TYPE                     g_driverType = D3D_DRIVER_TYPE_NULL;
+        D3D_FEATURE_LEVEL                   g_featureLevel = D3D_FEATURE_LEVEL_11_0;
+        ID3D11Device* g_pd3dDevice = NULL;
+        ID3D11DeviceContext* g_pImmediateContext = NULL;
+        IDXGISwapChain* g_pSwapChain = NULL;
+        ID3D11RenderTargetView* g_pRenderTargetView = NULL;
 
-    Texture2D*                          g_pDepthStencil = nullptr; //
+        Texture2D* g_pDepthStencil = nullptr; //
 
-    ID3D11DepthStencilView*             g_pDepthStencilView = NULL;
-    ID3D11ShaderResourceView*           g_pDepthStencilSRV = NULL;
-    ID3D11VertexShader*                 g_pVertexShader = NULL;
-    ID3D11PixelShader*                  g_pPixelShader = NULL;
-    ID3D11InputLayout*                  g_pVertexLayout = NULL;
+        ID3D11DepthStencilView* g_pDepthStencilView = NULL;
+        ID3D11ShaderResourceView* g_pDepthStencilSRV = NULL;
+        ID3D11VertexShader* g_pVertexShader = NULL;
+        ID3D11PixelShader* g_pPixelShader = NULL;
+        ID3D11InputLayout* g_pVertexLayout = NULL;
 
-    Buffer*                             g_pVertexBuffer = nullptr; //
-    Buffer*                             g_pIndexBuffer = nullptr; //
-    Buffer*                             g_pCBNeverChanges = nullptr; //
-    Buffer*                             g_pCBChangeOnResize = nullptr; //
-    Buffer*                             g_pCBChangesEveryFrame = nullptr; //
+        Buffer* g_pVertexBuffer = nullptr; //
+        Buffer* g_pIndexBuffer = nullptr; //
+        Buffer* g_pCBNeverChanges = nullptr; //
+        Buffer* g_pCBChangeOnResize = nullptr; //
+        Buffer* g_pCBChangesEveryFrame = nullptr; //
 
-    ID3D11ShaderResourceView*           g_pTextureRV = NULL;
-    ID3D11SamplerState*                 g_pSamplerLinear = NULL;
-    XMMATRIX                            g_World;
-    XMMATRIX                            g_View;
-    XMMATRIX                            g_Projection;
-    XMFLOAT4                            g_vMeshColor;
+        ID3D11ShaderResourceView* g_pTextureRV = NULL;
+        ID3D11SamplerState* g_pSamplerLinear = NULL;
+        XMMATRIX                            g_World;
+        XMMATRIX                            g_View;
+        XMMATRIX                            g_Projection;
+        XMFLOAT4                            g_vMeshColor;
 
-    Buffer*                             g_pVertexBuffer2 = nullptr; //
-    Buffer*                             g_pIndexBuffer2 = nullptr; //
+        Buffer* g_pVertexBuffer2 = nullptr; //
+        Buffer* g_pIndexBuffer2 = nullptr; //
 
-    ID3D11VertexShader*                 g_pVertexShader2 = NULL;
-    ID3D11PixelShader*                  g_pPixelShader2 = NULL;
-    ID3D11RasterizerState*              g_Rasterizer = NULL;
-    ID3D11RasterizerState*              g_Rasterizer2 = NULL;
-    ID3D11InputLayout*                  g_pVertexLayout2 = NULL;
+        ID3D11VertexShader* g_pVertexShader2 = NULL;
+        ID3D11PixelShader* g_pPixelShader2 = NULL;
+        ID3D11RasterizerState* g_Rasterizer = NULL;
+        ID3D11RasterizerState* g_Rasterizer2 = NULL;
+        ID3D11InputLayout* g_pVertexLayout2 = NULL;
+
+
+
+
+        Mesh                                mesh;
+        Mesh                                mesh2;
+
+
 #endif
-  public:
+    public:
 #if defined(DX11)
-    HRESULT CompileShaderFromFile(const char* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
-    void InitVariables();
+        HRESULT CompileShaderFromFile(const char* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
+        void InitVariables();
 #endif
-   
 
-    HRESULT InitDevice(HWND _hwnd);
 
-    void Render();
+        HRESULT InitDevice(HWND _hwnd);
 
-    void CleanupDevice();
+        void Render();
 
-    HWND m_hwnd;
-  };
+        void CleanupDevice();
 
-  extern test& GetTestObj(HWND _hwnd);
+        HWND m_hwnd;
+    };
+
+    extern test& GetTestObj(HWND _hwnd);
 
 }
