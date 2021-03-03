@@ -396,17 +396,30 @@ namespace GraphicsModule
         g_World = XMMatrixIdentity();
 
         // Initialize the view matrix
-        XMVECTOR Eye = XMVectorSet(0.0f, 3.0f, -6.0f, 0.0f);
-        XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-        XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-        g_View = XMMatrixLookAtLH(Eye, At, Up);
+        camera.setEye(0.0f, 3.0f, -6.0f);
+        camera.setAt(0.0f, 1.0f, 0.0f);
+        camera.setUp(0.0f, 1.0f, 0.0f);
+        camera.setViewMatrix();
+
+        g_View = XMMATRIX(camera.getViewMatrix().matrix4);
+
+
 
         CBNeverChanges cbNeverChanges;
         cbNeverChanges.mView = XMMatrixTranspose(g_View);
         g_pImmediateContext->UpdateSubresource(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
 
         // Initialize the projection matrix
-        g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
+        camera.setMatrixPerspective(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
+        camera.setMatrixOrthographic(width / 100, height / 100, 0.01f, 100.0f);
+        if (cameraChange)
+        {
+            g_Projection = XMMATRIX(camera.getMatrixPerspective().matrix4);
+        }
+        else
+        {
+            g_Projection = XMMATRIX(camera.getMatrixOrthographic().matrix4);
+        }
 
         CBChangeOnResize cbChangesOnResize;
         cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);

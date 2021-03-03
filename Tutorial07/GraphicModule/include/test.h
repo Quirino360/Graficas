@@ -10,6 +10,7 @@
 #include <xnamath.h>
 #endif
 
+#include"Camera.h"
 #include "Mesh.h"
 #include "Buffer.h"
 #include "Texture2D.h"
@@ -101,9 +102,9 @@ namespace GraphicsModule
 
 
 
-
+        Camera                              camera;
         Mesh                                mesh;
-        Mesh                                mesh2;
+        bool                                cameraChange = true;
 
 
 #endif

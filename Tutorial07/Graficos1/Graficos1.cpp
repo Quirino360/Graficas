@@ -32,6 +32,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _m
  */
 LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
 {
+    auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
   // Handle UI inputs
   if (ImGui_ImplWin32_WndProcHandler(_hwnd, _msg, _wParam, _lParam))
     return 1;
@@ -57,6 +58,50 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
     PostQuitMessage(0);
     break;
 
+  case WM_KEYDOWN: {
+      UINT key = LOWORD(_wParam);
+      switch (key)
+      {
+      case 37:    //Left key 
+          testOBj.camera.move(-1, 0, 0);
+          break;
+      case 38:    //Up key
+          testOBj.camera.move(0, 1, 0);
+          break;
+      case 39:    //Right key
+          testOBj.camera.move(1, 0, 0);
+          break;
+      case 40:    //Down key 
+          testOBj.camera.move(0, -1, 0);
+          break;
+      case 'A':    //Key A
+          testOBj.camera.move(0, 0, 1);
+          break;
+      case 'D':
+          testOBj.camera.move(0, 0, -1);
+          break;
+
+      case 9:     //Tab 
+      {
+          testOBj.cameraChange = !testOBj.cameraChange;
+          if (testOBj.cameraChange)
+          {
+              testOBj.g_Projection = XMMATRIX(testOBj.camera.getMatrixPerspective().matrix4);
+          }
+          else
+          {
+              testOBj.g_Projection = XMMATRIX(testOBj.camera.getMatrixOrthographic().matrix4);
+          }
+          GraphicsModule::CBChangeOnResize cbChangesOnResize;
+          cbChangesOnResize.mProjection = XMMatrixTranspose(testOBj.g_Projection);
+          testOBj.g_pImmediateContext->UpdateSubresource(testOBj.g_pCBChangeOnResize->getyBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
+          break;
+      }
+
+      default:
+          break;
+      }
+  }
   }
   return ::DefWindowProc(_hwnd, _msg, _wParam, _lParam);
 }
