@@ -204,7 +204,7 @@ void Render()
     UIRender();
 #endif
 #if defined(DX11)
-    testOBj.g_pSwapChain->Present(0, 0);
+    testOBj.renderManager.PresentDX11(0, 0);
 #endif
 }
 

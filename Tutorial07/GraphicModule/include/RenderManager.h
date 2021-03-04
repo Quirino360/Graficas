@@ -54,7 +54,10 @@ public:
     void PSSetShaderResourcesDX11(UINT _StartSlot, UINT _NumViews, ID3D11ShaderResourceView* const* _ppShaderResourceViews);
     void PSSetSamplersDX11(UINT _StartSlot, UINT _NumSamplers, ID3D11SamplerState** _ppSamplers);
     void DrawIndexedDX11(UINT _IndexCount, UINT _StartIndexLocation, INT  _BaseVertexLocation);
+
     // -------------------------- EswapChain ------------------------ //
+    HRESULT GetBufferDX11(UINT _Buffer, REFIID _riid, void** _ppSurface);
+    HRESULT PresentDX11(UINT SyncInterval, UINT Flags);
 
 
     // Relese
