@@ -371,6 +371,7 @@
     <ClInclude Include="include\GraphicModule.h" />
     <ClInclude Include="include\Matrix4.h" />
     <ClInclude Include="include\Mesh.h" />
+    <ClInclude Include="include\RenderManager.h" />
     <ClInclude Include="include\Resource.h" />
     <ClInclude Include="include\test.h" />
     <ClInclude Include="include\Texture2D.h" />
@@ -384,6 +385,7 @@
     <ClCompile Include="src\Device.cpp" />
     <ClCompile Include="src\Matrix4.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
+    <ClCompile Include="src\RenderManager.cpp" />
     <ClCompile Include="src\test.cpp" />
     <ClCompile Include="src\Texture2D.cpp" />
     <ClCompile Include="src\Vector3.cpp" />

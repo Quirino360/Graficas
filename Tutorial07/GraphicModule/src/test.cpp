@@ -99,8 +99,10 @@ namespace GraphicsModule
         for (UINT driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++)
         {
             g_driverType = driverTypes[driverTypeIndex];
-            hr = D3D11CreateDeviceAndSwapChain(NULL, g_driverType, NULL, createDeviceFlags, featureLevels, numFeatureLevels,
-                D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &g_featureLevel, &g_pImmediateContext);
+            hr = renderManager.CreateDeviceAndSwapChainDX11(NULL, g_driverType, NULL, createDeviceFlags, featureLevels, numFeatureLevels,
+                D3D11_SDK_VERSION, &sd, &g_pSwapChain, &renderManager.getDeviceDX11() , &g_featureLevel, &g_pImmediateContext);
+            
+
             if (SUCCEEDED(hr))
                 break;
         }
@@ -113,8 +115,7 @@ namespace GraphicsModule
         hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer->getTextureDX11());
         if (FAILED(hr))
             return hr;
-
-        hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer->getTextureDX11(), NULL, &g_pRenderTargetView);
+        hr = renderManager.CreateRenderTargetViewDX11(pBackBuffer->getTextureDX11(), NULL, &g_pRenderTargetView);
         pBackBuffer->getTextureDX11()->Release();
         if (FAILED(hr))
             return hr;
@@ -133,7 +134,7 @@ namespace GraphicsModule
         descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
         descDepth.CPUAccessFlags = 0;
         descDepth.MiscFlags = 0;
-        hr = g_pd3dDevice->CreateTexture2D(&descDepth, NULL, &g_pDepthStencil->getTextureDX11());
+        hr = renderManager.CreateTexture2DDX11(&descDepth, NULL, &g_pDepthStencil->getTextureDX11());
         if (FAILED(hr))
             return hr;
 
@@ -143,7 +144,7 @@ namespace GraphicsModule
         descDSV.Format = DXGI_FORMAT_D32_FLOAT;
         descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
         descDSV.Texture2D.MipSlice = 0;
-        hr = g_pd3dDevice->CreateDepthStencilView(g_pDepthStencil->getTextureDX11(), &descDSV, &g_pDepthStencilView);
+        hr = renderManager.CreateDepthStencilViewDX11(g_pDepthStencil->getTextureDX11(), &descDSV, &g_pDepthStencilView);
         if (FAILED(hr))
             return hr;
 
@@ -153,7 +154,7 @@ namespace GraphicsModule
         srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
         srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
         srvDesc.Texture2D.MipLevels = 1; // same as orig texture
-        hr = g_pd3dDevice->CreateShaderResourceView(g_pDepthStencil->getTextureDX11(), &srvDesc, &g_pDepthStencilSRV);
+        hr = renderManager.CreateShaderResourceViewDX11(g_pDepthStencil->getTextureDX11(), &srvDesc, &g_pDepthStencilSRV);
         if (FAILED(hr))
             return hr;
 
@@ -182,7 +183,7 @@ namespace GraphicsModule
         }
 
         // Create the vertex shader
-        hr = g_pd3dDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), NULL, &g_pVertexShader);
+        hr = renderManager.CreateVertexShaderDX11(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), NULL, &g_pVertexShader);
         if (FAILED(hr))
         {
             pVSBlob->Release();
@@ -198,8 +199,7 @@ namespace GraphicsModule
         UINT numElements = ARRAYSIZE(layout);
 
         // Create the input layout
-        hr = g_pd3dDevice->CreateInputLayout(layout, numElements, pVSBlob->GetBufferPointer(),
-            pVSBlob->GetBufferSize(), &g_pVertexLayout);
+        hr = renderManager.CreateInputLayoutDX11(layout, numElements, pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &g_pVertexLayout);
         pVSBlob->Release();
         if (FAILED(hr))
             return hr;
@@ -215,7 +215,7 @@ namespace GraphicsModule
         }
 
         // Create the vertex shader
-        hr = g_pd3dDevice->CreateVertexShader(pVSBlob2->GetBufferPointer(), pVSBlob2->GetBufferSize(), NULL, &g_pVertexShader2);
+        hr = renderManager.CreateVertexShaderDX11(pVSBlob2->GetBufferPointer(), pVSBlob2->GetBufferSize(), NULL, &g_pVertexShader2);
         if (FAILED(hr))
         {
             pVSBlob2->Release();
@@ -231,8 +231,7 @@ namespace GraphicsModule
         UINT numElements2 = ARRAYSIZE(layout2);
 
         // Create the input layout
-        hr = g_pd3dDevice->CreateInputLayout(layout2, numElements2, pVSBlob2->GetBufferPointer(),
-            pVSBlob2->GetBufferSize(), &g_pVertexLayout2);
+        hr = renderManager.CreateInputLayoutDX11(layout2, numElements2, pVSBlob2->GetBufferPointer(), pVSBlob2->GetBufferSize(), &g_pVertexLayout2);
         pVSBlob2->Release();
         if (FAILED(hr))
             return hr;
@@ -248,7 +247,7 @@ namespace GraphicsModule
         }
 
         // Create the pixel shader
-        hr = g_pd3dDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), NULL, &g_pPixelShader);
+        hr = renderManager.CreatePixelShaderDX11(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), NULL, &g_pPixelShader);
         pPSBlob->Release();
         if (FAILED(hr))
             return hr;
@@ -264,7 +263,7 @@ namespace GraphicsModule
         }
 
         // Create the pixel shader
-        hr = g_pd3dDevice->CreatePixelShader(pPSBlob2->GetBufferPointer(), pPSBlob2->GetBufferSize(), NULL, &g_pPixelShader2);
+        hr = renderManager.CreatePixelShaderDX11(pPSBlob2->GetBufferPointer(), pPSBlob2->GetBufferSize(), NULL, &g_pPixelShader2);
         pPSBlob2->Release();
         if (FAILED(hr))
             return hr;
@@ -314,7 +313,7 @@ namespace GraphicsModule
         D3D11_SUBRESOURCE_DATA InitData;
         ZeroMemory(&InitData, sizeof(InitData));
         InitData.pSysMem = mesh.getVertices();
-        hr = g_pd3dDevice->CreateBuffer(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), &InitData, &g_pVertexBuffer->getyBufferDX11());
+        hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), &InitData, &g_pVertexBuffer->getyBufferDX11());
         if (FAILED(hr))
             return hr;
 
@@ -347,7 +346,7 @@ namespace GraphicsModule
         bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
         bd.CPUAccessFlags = 0;
         InitData.pSysMem = mesh.getIndexBuffer();
-        hr = g_pd3dDevice->CreateBuffer(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), &InitData, &g_pIndexBuffer->getyBufferDX11());
+        hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), &InitData, &g_pIndexBuffer->getyBufferDX11());
         if (FAILED(hr))
             return hr;
 
@@ -359,22 +358,23 @@ namespace GraphicsModule
         bd.ByteWidth = sizeof(CBNeverChanges);
         bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         bd.CPUAccessFlags = 0;
-        hr = g_pd3dDevice->CreateBuffer(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_pCBNeverChanges->getyBufferDX11());
+        hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_pCBNeverChanges->getyBufferDX11());
         if (FAILED(hr))
             return hr;
 
         bd.ByteWidth = sizeof(CBChangeOnResize);
-        hr = g_pd3dDevice->CreateBuffer(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_pCBChangeOnResize->getyBufferDX11());
+        hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_pCBChangeOnResize->getyBufferDX11());
         if (FAILED(hr))
             return hr;
 
         bd.ByteWidth = sizeof(CBChangesEveryFrame);
-        hr = g_pd3dDevice->CreateBuffer(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_pCBChangesEveryFrame->getyBufferDX11());
+        hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_pCBChangesEveryFrame->getyBufferDX11());
         if (FAILED(hr))
             return hr;
 
         // Load the Texture
-        hr = D3DX11CreateShaderResourceViewFromFile(g_pd3dDevice, "seafloor.dds", NULL, NULL, &g_pTextureRV, NULL);
+        
+        hr = D3DX11CreateShaderResourceViewFromFile(renderManager.getDeviceDX11(), "seafloor.dds", NULL, NULL, &g_pTextureRV, NULL);
         if (FAILED(hr))
             return hr;
 
@@ -388,7 +388,7 @@ namespace GraphicsModule
         sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
         sampDesc.MinLOD = 0;
         sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-        hr = g_pd3dDevice->CreateSamplerState(&sampDesc, &g_pSamplerLinear);
+        hr = renderManager.CreateSamplerStateDX11(&sampDesc, &g_pSamplerLinear);
         if (FAILED(hr))
             return hr;
 
@@ -431,12 +431,12 @@ namespace GraphicsModule
         ZeroMemory(&desc, sizeof(desc));
         desc.CullMode = D3D11_CULL_BACK;
         desc.FillMode = D3D11_FILL_SOLID;
-        hr = g_pd3dDevice->CreateRasterizerState(&desc, &g_Rasterizer);
+        hr = renderManager.CreateRasterizerStateDX11(&desc, &g_Rasterizer);
         if (FAILED(hr))
             return hr;
 
         desc.CullMode = D3D11_CULL_NONE;
-        hr = g_pd3dDevice->CreateRasterizerState(&desc, &g_Rasterizer2);
+        hr = renderManager.CreateRasterizerStateDX11(&desc, &g_Rasterizer2);
         if (FAILED(hr))
             return hr;
 #endif
@@ -513,6 +513,15 @@ namespace GraphicsModule
     {
 #if defined(DX11)
         
+
+        /*
+        //Set index buffer
+        g_pImmediateContext->OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
+        g_pImmediateContext->RSSetViewports(1, &vp);
+        g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
+        */
+
+
         UINT stride = sizeof(SimpleVertex);
         UINT offset = 0;
 
@@ -533,6 +542,30 @@ namespace GraphicsModule
         g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
         g_pImmediateContext->PSSetSamplers(0, 1, &g_pSamplerLinear);
         g_pImmediateContext->DrawIndexed(36, 0, 0);
+        
+        CBChangesEveryFrame cb;
+        cb.mWorld = XMMatrixTranspose(g_World);
+        cb.vMeshColor = g_vMeshColor;
+        g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
+        g_pImmediateContext->DrawIndexed(36, 0, 0);
+
+        g_World = XMMatrixTranslation(3, 0, 0);
+        cb.mWorld = XMMatrixTranspose(g_World);
+        cb.vMeshColor = g_vMeshColor;
+        g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
+        g_pImmediateContext->DrawIndexed(36, 0, 0);
+
+        g_World = XMMatrixTranslation(0, 3, 0);
+        cb.mWorld = XMMatrixTranspose(g_World);
+        cb.vMeshColor = g_vMeshColor;
+        g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
+        g_pImmediateContext->DrawIndexed(36, 0, 0);
+
+        g_World = XMMatrixTranslation(-3, 0, 0);
+        cb.mWorld = XMMatrixTranspose(g_World);
+        cb.vMeshColor = g_vMeshColor;
+        g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
+        g_pImmediateContext->DrawIndexed(36, 0, 0);
 
         //
         // Render the SAQ
@@ -544,6 +577,8 @@ namespace GraphicsModule
         g_pImmediateContext->VSSetShader(g_pVertexShader2, NULL, 0);
         g_pImmediateContext->PSSetShader(g_pPixelShader2, NULL, 0);
         //g_pImmediateContext->DrawIndexed(6, 0, 0);
+        
+       
         //
         // Present our back buffer to our front buffer
         //
@@ -576,7 +611,7 @@ namespace GraphicsModule
         if (g_pRenderTargetView) g_pRenderTargetView->Release();
         if (g_pSwapChain) g_pSwapChain->Release();
         if (g_pImmediateContext) g_pImmediateContext->Release();
-        if (g_pd3dDevice) g_pd3dDevice->Release();
+        if (renderManager.getDeviceDX11()) renderManager.getDeviceDX11()->Release();
 #endif
     }
 

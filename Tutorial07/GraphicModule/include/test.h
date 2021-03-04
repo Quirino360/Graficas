@@ -14,6 +14,7 @@
 #include "Mesh.h"
 #include "Buffer.h"
 #include "Texture2D.h"
+#include "RenderManager.h"
 
 namespace GraphicsModule
 {
@@ -65,9 +66,12 @@ namespace GraphicsModule
 #if defined(DX11)
         D3D_DRIVER_TYPE                     g_driverType = D3D_DRIVER_TYPE_NULL;
         D3D_FEATURE_LEVEL                   g_featureLevel = D3D_FEATURE_LEVEL_11_0;
+
         ID3D11Device* g_pd3dDevice = NULL;
         ID3D11DeviceContext* g_pImmediateContext = NULL;
         IDXGISwapChain* g_pSwapChain = NULL;
+        RenderManager renderManager;
+
         ID3D11RenderTargetView* g_pRenderTargetView = NULL;
 
         Texture2D* g_pDepthStencil = nullptr; //

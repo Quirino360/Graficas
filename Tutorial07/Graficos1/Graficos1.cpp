@@ -166,7 +166,7 @@ HRESULT InitImgUI()
   ImGui_ImplWin32_Init(g_hwnd);
 #if defined(DX11)
   auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
-  ImGui_ImplDX11_Init(testOBj.g_pd3dDevice, testOBj.g_pImmediateContext);
+  ImGui_ImplDX11_Init(testOBj.renderManager.getDeviceDX11(), testOBj.g_pImmediateContext);
 #endif
 
   return S_OK;

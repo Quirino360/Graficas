@@ -51,6 +51,9 @@
     <ClInclude Include="include\Matrix4.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\RenderManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\test.cpp">
@@ -78,6 +81,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
