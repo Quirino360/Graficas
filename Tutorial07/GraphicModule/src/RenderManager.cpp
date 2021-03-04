@@ -66,3 +66,94 @@ HRESULT RenderManager::CreateRasterizerStateDX11(const D3D11_RASTERIZER_DESC* _p
 {
 	return DeviceDX11->CreateRasterizerState(_pRasterizerDesc, _ppRasterizerState);
 }
+
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+//------------------------------------------------------------------------------ Device Context -----------------------------------------------------------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+
+
+void RenderManager::OMSetRenderTargetsDX11(UINT _NumViews, ID3D11RenderTargetView* const* _ppRenderTargetViews, ID3D11DepthStencilView* _pDepthStencilView)
+{
+	ImmediateContextDX11->OMSetRenderTargets(_NumViews, _ppRenderTargetViews, _pDepthStencilView);
+}
+
+void RenderManager::RSSetViewportsDX11(UINT _NumViewports, const D3D11_VIEWPORT* _pViewports)
+{
+	ImmediateContextDX11->RSSetViewports(_NumViewports, _pViewports);
+}
+
+void RenderManager::IASetPrimitiveTopologyDX11(D3D11_PRIMITIVE_TOPOLOGY _Topology)
+{
+	ImmediateContextDX11->IASetPrimitiveTopology(_Topology);
+}
+
+void RenderManager::UpdateSubresourceDX11(ID3D11Resource* _pDstResource, UINT _DstSubresource, const D3D11_BOX* _pDstBox, const void* _pSrcData, UINT _SrcRowPitch, UINT _SrcDepthPitch)
+{
+	ImmediateContextDX11->UpdateSubresource(_pDstResource, _DstSubresource, _pDstBox, _pSrcData, _SrcRowPitch, _SrcDepthPitch);
+}
+
+void RenderManager::ClearRenderTargetViewDX11(ID3D11RenderTargetView* _pRenderTargetView, const FLOAT* _ColorRGBA)
+{
+	ImmediateContextDX11->ClearRenderTargetView(_pRenderTargetView, _ColorRGBA);
+}
+
+void RenderManager::ClearDepthStencilViewDX11(ID3D11DepthStencilView* _pDepthStencilView, UINT _ClearFlags, FLOAT _Depth, UINT8 _Stencil)
+{
+	ImmediateContextDX11->ClearDepthStencilView(_pDepthStencilView, _ClearFlags, _Depth, _Stencil);
+}
+
+void RenderManager::IASetInputLayoutDX11(ID3D11InputLayout* _pInputLayout)
+{
+	ImmediateContextDX11->IASetInputLayout(_pInputLayout);
+}
+
+void RenderManager::RSSetStateDX11(ID3D11RasterizerState* _pRasterizerState)
+{
+	ImmediateContextDX11->RSSetState(_pRasterizerState);
+}
+
+void RenderManager::IASetVertexBuffersDX11(UINT _StartSlot, UINT _NumBuffers, ID3D11Buffer* const* _ppVertexBuffers, const UINT* _pStrides, const UINT* _pOffsets)
+{
+	ImmediateContextDX11->IASetVertexBuffers(_StartSlot, _NumBuffers, _ppVertexBuffers, _pStrides, _pOffsets);
+}
+
+void RenderManager::IASetIndexBufferDX11(ID3D11Buffer* _pIndexBuffer, DXGI_FORMAT _Format, UINT _Offset)
+{
+	ImmediateContextDX11->IASetIndexBuffer(_pIndexBuffer, _Format, _Offset);
+}
+
+void RenderManager::VSSetShaderDX11(ID3D11VertexShader* _pVertexShader, ID3D11ClassInstance* const* _ppClassInstances, UINT _NumClassInstances)
+{
+	ImmediateContextDX11->VSSetShader(_pVertexShader, _ppClassInstances, _NumClassInstances);
+}
+
+void RenderManager::VSSetConstantBuffersDX11(UINT _StartSlot, UINT _NumBuffers, ID3D11Buffer* const* _ppConstantBuffers)
+{
+	ImmediateContextDX11->VSSetConstantBuffers(_StartSlot, _NumBuffers, _ppConstantBuffers);
+}
+
+void RenderManager::PSSetShaderDX11(ID3D11PixelShader* _pPixelShader, ID3D11ClassInstance* const* _ppClassInstances, UINT _NumClassInstances)
+{
+	ImmediateContextDX11->PSSetShader(_pPixelShader, _ppClassInstances, _NumClassInstances);
+}
+
+void RenderManager::PSSetConstantBuffersDX11(UINT _StartSlot, UINT _NumBuffers, ID3D11Buffer* const* _ppConstantBuffers)
+{
+	ImmediateContextDX11->PSSetConstantBuffers(_StartSlot, _NumBuffers, _ppConstantBuffers);
+}
+
+void RenderManager::PSSetShaderResourcesDX11(UINT _StartSlot, UINT _NumViews, ID3D11ShaderResourceView* const* _ppShaderResourceViews)
+{
+	ImmediateContextDX11->PSSetShaderResources(_StartSlot, _NumViews, _ppShaderResourceViews);
+}
+
+void RenderManager::PSSetSamplersDX11(UINT _StartSlot, UINT _NumSamplers, ID3D11SamplerState** _ppSamplers)
+{
+	ImmediateContextDX11->PSGetSamplers(_StartSlot, _NumSamplers, _ppSamplers);
+}
+
+void RenderManager::DrawIndexedDX11(UINT _IndexCount, UINT _StartIndexLocation, INT _BaseVertexLocation)
+{
+	ImmediateContextDX11->DrawIndexed(_IndexCount, _StartIndexLocation, _BaseVertexLocation);
+}

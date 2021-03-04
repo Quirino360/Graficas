@@ -100,7 +100,7 @@ namespace GraphicsModule
         {
             g_driverType = driverTypes[driverTypeIndex];
             hr = renderManager.CreateDeviceAndSwapChainDX11(NULL, g_driverType, NULL, createDeviceFlags, featureLevels, numFeatureLevels,
-                D3D11_SDK_VERSION, &sd, &g_pSwapChain, &renderManager.getDeviceDX11() , &g_featureLevel, &g_pImmediateContext);
+                D3D11_SDK_VERSION, &sd, &g_pSwapChain, &renderManager.getDeviceDX11() , &g_featureLevel, &renderManager.getDeviceContextDX11());
             
 
             if (SUCCEEDED(hr))
@@ -158,7 +158,7 @@ namespace GraphicsModule
         if (FAILED(hr))
             return hr;
 
-        g_pImmediateContext->OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
+        renderManager.OMSetRenderTargetsDX11(1, &g_pRenderTargetView, g_pDepthStencilView);
 
         // Setup the viewport
         //D3D11_VIEWPORT vp;
@@ -170,7 +170,7 @@ namespace GraphicsModule
         vp.TopLeftX = 0;
         vp.TopLeftY = 0;
 
-        g_pImmediateContext->RSSetViewports(1, reinterpret_cast<D3D11_VIEWPORT*>(&vp));
+        renderManager.RSSetViewportsDX11(1, reinterpret_cast<D3D11_VIEWPORT*>(&vp));
 
         // Compile the vertex shader
         ID3DBlob* pVSBlob = NULL;
@@ -351,7 +351,7 @@ namespace GraphicsModule
             return hr;
 
         // Set primitive topology
-        g_pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        renderManager.IASetPrimitiveTopologyDX11(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
         // Create the constant buffers
         bd.Usage = D3D11_USAGE_DEFAULT_DX11;
@@ -407,7 +407,7 @@ namespace GraphicsModule
 
         CBNeverChanges cbNeverChanges;
         cbNeverChanges.mView = XMMatrixTranspose(g_View);
-        g_pImmediateContext->UpdateSubresource(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
+        renderManager.UpdateSubresourceDX11(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
 
         // Initialize the projection matrix
         camera.setMatrixPerspective(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
@@ -423,7 +423,7 @@ namespace GraphicsModule
 
         CBChangeOnResize cbChangesOnResize;
         cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
-        g_pImmediateContext->UpdateSubresource(g_pCBChangeOnResize->getyBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
+        renderManager.UpdateSubresourceDX11(g_pCBChangeOnResize->getyBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
 
 
         // create rasterizer state
@@ -477,12 +477,12 @@ namespace GraphicsModule
         // Clear the back buffer
         //
         float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f }; // red, green, blue, alpha
-        g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView, ClearColor);
+        renderManager.ClearRenderTargetViewDX11(g_pRenderTargetView, ClearColor);
 
         //
         // Clear the depth buffer to 1.0 (max depth)
         //
-        g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+        renderManager.ClearDepthStencilViewDX11(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
         //
         // Update variables that change once per frame
@@ -490,24 +490,22 @@ namespace GraphicsModule
         CBChangesEveryFrame cb;
         cb.mWorld = XMMatrixTranspose(g_World);
         cb.vMeshColor = g_vMeshColor;
-        g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
+        renderManager.UpdateSubresourceDX11(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
 
         CBNeverChanges cbNeverChanges;
         cbNeverChanges.mView = XMMatrixTranspose(g_View);
-        g_pImmediateContext->UpdateSubresource(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
+        renderManager.UpdateSubresourceDX11(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
 
         CBChangeOnResize cbChangesOnResize;
         cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
-        g_pImmediateContext->UpdateSubresource(g_pCBChangeOnResize->getyBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
+        renderManager.UpdateSubresourceDX11(g_pCBChangeOnResize->getyBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
 
         // Move the mouse updating the position
         g_View = XMMATRIX(camera.getViewMatrix().matrix4);
         cbNeverChanges.mView = XMMatrixTranspose(g_View);
-        g_pImmediateContext->UpdateSubresource(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
+        renderManager.UpdateSubresourceDX11(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
 
-
-
-    }
+        }
 
     void test::Render()
     {
@@ -529,53 +527,56 @@ namespace GraphicsModule
         // Render the cube
         //
         // Set the input layout
-        g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
-        g_pImmediateContext->RSSetState(g_Rasterizer);
-        g_pImmediateContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer->getyBufferDX11(), &stride, &offset);
-        g_pImmediateContext->IASetIndexBuffer(g_pIndexBuffer->getyBufferDX11(), DXGI_FORMAT_R16_UINT, 0);
-        g_pImmediateContext->VSSetShader(g_pVertexShader, NULL, 0);
-        g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pCBNeverChanges->getyBufferDX11());
-        g_pImmediateContext->VSSetConstantBuffers(1, 1, &g_pCBChangeOnResize->getyBufferDX11());
-        g_pImmediateContext->VSSetConstantBuffers(2, 1, &g_pCBChangesEveryFrame->getyBufferDX11());
-        g_pImmediateContext->PSSetShader(g_pPixelShader, NULL, 0);
-        g_pImmediateContext->PSSetConstantBuffers(2, 1, &g_pCBChangesEveryFrame->getyBufferDX11());
-        g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
-        g_pImmediateContext->PSSetSamplers(0, 1, &g_pSamplerLinear);
-        g_pImmediateContext->DrawIndexed(36, 0, 0);
+        
+        renderManager.IASetInputLayoutDX11(g_pVertexLayout);
+        renderManager.RSSetStateDX11(g_Rasterizer);
+        renderManager.IASetVertexBuffersDX11(0, 1, &g_pVertexBuffer->getyBufferDX11(), &stride, &offset);
+        renderManager.IASetIndexBufferDX11(g_pIndexBuffer->getyBufferDX11(), DXGI_FORMAT_R16_UINT, 0);
+        renderManager.VSSetShaderDX11(g_pVertexShader, NULL, 0);
+        renderManager.VSSetConstantBuffersDX11(0, 1, &g_pCBNeverChanges->getyBufferDX11());
+        renderManager.VSSetConstantBuffersDX11(1, 1, &g_pCBChangeOnResize->getyBufferDX11());
+        renderManager.VSSetConstantBuffersDX11(2, 1, &g_pCBChangesEveryFrame->getyBufferDX11());
+
+        renderManager.PSSetShaderDX11(g_pPixelShader, NULL, 0);
+        renderManager.PSSetConstantBuffersDX11(2, 1, &g_pCBChangesEveryFrame->getyBufferDX11());
+        renderManager.PSSetShaderResourcesDX11(0, 1, &g_pTextureRV);
+        renderManager.PSSetSamplersDX11(0, 1, &g_pSamplerLinear);
+        renderManager.DrawIndexedDX11(36, 0, 0);
         
         CBChangesEveryFrame cb;
         cb.mWorld = XMMatrixTranspose(g_World);
         cb.vMeshColor = g_vMeshColor;
-        g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
-        g_pImmediateContext->DrawIndexed(36, 0, 0);
+        renderManager.UpdateSubresourceDX11(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
+        renderManager.DrawIndexedDX11(36, 0, 0);
 
         g_World = XMMatrixTranslation(3, 0, 0);
         cb.mWorld = XMMatrixTranspose(g_World);
         cb.vMeshColor = g_vMeshColor;
-        g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
-        g_pImmediateContext->DrawIndexed(36, 0, 0);
+        renderManager.UpdateSubresourceDX11(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
+        renderManager.DrawIndexedDX11(36, 0, 0);
+
 
         g_World = XMMatrixTranslation(0, 3, 0);
         cb.mWorld = XMMatrixTranspose(g_World);
         cb.vMeshColor = g_vMeshColor;
-        g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
-        g_pImmediateContext->DrawIndexed(36, 0, 0);
+        renderManager.UpdateSubresourceDX11(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
+        renderManager.DrawIndexedDX11(36, 0, 0);
 
         g_World = XMMatrixTranslation(-3, 0, 0);
         cb.mWorld = XMMatrixTranspose(g_World);
         cb.vMeshColor = g_vMeshColor;
-        g_pImmediateContext->UpdateSubresource(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
-        g_pImmediateContext->DrawIndexed(36, 0, 0);
+        renderManager.UpdateSubresourceDX11(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
+        renderManager.DrawIndexedDX11(36, 0, 0);
 
         //
         // Render the SAQ
         //
-        g_pImmediateContext->IASetInputLayout(g_pVertexLayout2);
-        g_pImmediateContext->RSSetState(g_Rasterizer2);
-        g_pImmediateContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer2->getyBufferDX11(), &stride, &offset);
-        g_pImmediateContext->IASetIndexBuffer(g_pIndexBuffer2->getyBufferDX11(), DXGI_FORMAT_R16_UINT, 0);
-        g_pImmediateContext->VSSetShader(g_pVertexShader2, NULL, 0);
-        g_pImmediateContext->PSSetShader(g_pPixelShader2, NULL, 0);
+        renderManager.IASetInputLayoutDX11(g_pVertexLayout2);
+        renderManager.RSSetStateDX11(g_Rasterizer2);
+        renderManager.IASetVertexBuffersDX11(0, 1, &g_pVertexBuffer2->getyBufferDX11(), &stride, &offset);
+        renderManager.IASetIndexBufferDX11(g_pIndexBuffer2->getyBufferDX11(), DXGI_FORMAT_R16_UINT, 0);
+        renderManager.VSSetShaderDX11(g_pVertexShader2, NULL, 0);
+        renderManager.PSSetShaderDX11(g_pPixelShader2, NULL, 0);
         //g_pImmediateContext->DrawIndexed(6, 0, 0);
         
        
@@ -590,7 +591,7 @@ namespace GraphicsModule
     void test::CleanupDevice()
     {
 #if defined(DX11)
-        if (g_pImmediateContext) g_pImmediateContext->ClearState();
+        if (renderManager.getDeviceContextDX11()) renderManager.getDeviceContextDX11()->ClearState();
 
         if (g_pSamplerLinear) g_pSamplerLinear->Release();
         if (g_pTextureRV) g_pTextureRV->Release();
@@ -610,7 +611,7 @@ namespace GraphicsModule
         if (g_pDepthStencilView) g_pDepthStencilView->Release();
         if (g_pRenderTargetView) g_pRenderTargetView->Release();
         if (g_pSwapChain) g_pSwapChain->Release();
-        if (g_pImmediateContext) g_pImmediateContext->Release();
+        if (renderManager.getDeviceContextDX11()) renderManager.getDeviceContextDX11()->Release();
         if (renderManager.getDeviceDX11()) renderManager.getDeviceDX11()->Release();
 #endif
     }

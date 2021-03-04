@@ -94,7 +94,7 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
           }
           GraphicsModule::CBChangeOnResize cbChangesOnResize;
           cbChangesOnResize.mProjection = XMMatrixTranspose(testOBj.g_Projection);
-          testOBj.g_pImmediateContext->UpdateSubresource(testOBj.g_pCBChangeOnResize->getyBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
+          testOBj.renderManager.getDeviceContextDX11()->UpdateSubresource(testOBj.g_pCBChangeOnResize->getyBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
           break;
       }
 
@@ -166,7 +166,8 @@ HRESULT InitImgUI()
   ImGui_ImplWin32_Init(g_hwnd);
 #if defined(DX11)
   auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
-  ImGui_ImplDX11_Init(testOBj.renderManager.getDeviceDX11(), testOBj.g_pImmediateContext);
+  
+  ImGui_ImplDX11_Init(testOBj.renderManager.getDeviceDX11(), testOBj.renderManager.getDeviceContextDX11());
 #endif
 
   return S_OK;
