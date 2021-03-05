@@ -100,7 +100,7 @@ namespace GraphicsModule
         {
             g_driverType = driverTypes[driverTypeIndex];
             hr = renderManager.CreateDeviceAndSwapChainDX11(NULL, g_driverType, NULL, createDeviceFlags, featureLevels, numFeatureLevels,
-                D3D11_SDK_VERSION, &sd, &renderManager.getSwapChainDX11(), &renderManager.getDeviceDX11() , &g_featureLevel, &renderManager.getDeviceContextDX11());
+                D3D11_SDK_VERSION, &sd, &g_pSwapChain, &renderManager.getDeviceDX11() , &g_featureLevel, &renderManager.getDeviceContextDX11());
             
 
             if (SUCCEEDED(hr))
@@ -112,7 +112,7 @@ namespace GraphicsModule
         // Create a render target view
         //ID3D11Texture2D* pBackBuffer = NULL;
         Texture2D* pBackBuffer = new Texture2D();
-        hr = renderManager.GetBufferDX11(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer->getTextureDX11());
+        hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer->getTextureDX11());
         if (FAILED(hr))
             return hr;
         hr = renderManager.CreateRenderTargetViewDX11(pBackBuffer->getTextureDX11(), NULL, &g_pRenderTargetView);
@@ -610,7 +610,7 @@ namespace GraphicsModule
 
         if (g_pDepthStencilView) g_pDepthStencilView->Release();
         if (g_pRenderTargetView) g_pRenderTargetView->Release();
-        if (renderManager.getSwapChainDX11()) renderManager.getSwapChainDX11()->Release();
+        if (g_pSwapChain) g_pSwapChain->Release();
         if (renderManager.getDeviceContextDX11()) renderManager.getDeviceContextDX11()->Release();
         if (renderManager.getDeviceDX11()) renderManager.getDeviceDX11()->Release();
 #endif
