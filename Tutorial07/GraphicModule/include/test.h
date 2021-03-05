@@ -112,23 +112,6 @@ namespace GraphicsModule
         LPPOINT                             newCursor = new POINT();
         LPPOINT                             oldCursor = new POINT();
 
-        // -------------------------------------------------------- Inlcuion de texturas ---------------------------------------------------- //
-        ID3D11Texture2D* g_pTextRT2 = NULL;
-        ID3D11ShaderResourceView* g_pViewRT2 = NULL;
-        ID3D11RenderTargetView* g_pRenderTargetView2 = NULL;
-
-        ID3D11Texture2D* g_pTextRT3 = NULL;
-        ID3D11ShaderResourceView* g_pViewRT3 = NULL;
-        ID3D11RenderTargetView* g_pRenderTargetView3 = NULL;
-
-        ID3D11Texture2D* g_pTextRT2 = NULL;
-        ID3D11ShaderResourceView* g_pViewRT2 = NULL;
-        ID3D11RenderTargetView* g_pRenderTargetView3 = NULL;
-
-        ID3D11Texture2D* g_pTextRT2 = NULL;
-        ID3D11ShaderResourceView* g_pViewRT2 = NULL;
-        ID3D11RenderTargetView* g_pRenderTargetView3 = NULL;
-
 #endif
     public:
 #if defined(DX11)
