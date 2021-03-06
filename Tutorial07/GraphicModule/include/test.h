@@ -72,12 +72,9 @@ namespace GraphicsModule
         IDXGISwapChain* g_pSwapChain = NULL;
         RenderManager renderManager;
 
-        ID3D11RenderTargetView* g_pRenderTargetView = NULL;
 
-        Texture2D* g_pDepthStencil = nullptr; //
 
         ID3D11DepthStencilView* g_pDepthStencilView = NULL;
-        ID3D11ShaderResourceView* g_pDepthStencilSRV = NULL;
         ID3D11VertexShader* g_pVertexShader = NULL;
         ID3D11PixelShader* g_pPixelShader = NULL;
         ID3D11InputLayout* g_pVertexLayout = NULL;
@@ -88,7 +85,6 @@ namespace GraphicsModule
         Buffer* g_pCBChangeOnResize = nullptr; //
         Buffer* g_pCBChangesEveryFrame = nullptr; //
 
-        ID3D11ShaderResourceView* g_pTextureRV = NULL;
         ID3D11SamplerState* g_pSamplerLinear = NULL;
         XMMATRIX                            g_World;
         XMMATRIX                            g_View;
@@ -111,6 +107,25 @@ namespace GraphicsModule
         bool                                cameraChange = true;
         LPPOINT                             newCursor = new POINT();
         LPPOINT                             oldCursor = new POINT();
+
+        // -------------------------------------------------------- Inlcuion de texturas ---------------------------------------------------- //
+        Texture2D* Texture = nullptr; //
+
+        ID3D11ShaderResourceView* ResorceView1 = NULL;
+        ID3D11ShaderResourceView* ShaderResourceView = NULL;
+        ID3D11RenderTargetView* RenderTargetView1 = NULL;
+
+
+        ID3D11ShaderResourceView* ResorceView2 = NULL;
+        ID3D11RenderTargetView* RenderTargetView2 = NULL;
+
+        ID3D11ShaderResourceView* ResorceView3 = NULL;
+        ID3D11RenderTargetView* RenderTargetView3 = NULL;
+
+        ID3D11ShaderResourceView* ResorceView4 = NULL;
+        ID3D11RenderTargetView* RenderTargetView4 = NULL;
+
+
 
 #endif
     public:

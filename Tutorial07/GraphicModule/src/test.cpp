@@ -35,7 +35,7 @@ namespace GraphicsModule
 
     void test::InitVariables()
     {
-        g_pDepthStencil = new Texture2D();
+        Texture = new Texture2D();
         g_pVertexBuffer = new Buffer();
         g_pIndexBuffer = new Buffer();
         g_pCBNeverChanges = new Buffer();
@@ -100,8 +100,8 @@ namespace GraphicsModule
         {
             g_driverType = driverTypes[driverTypeIndex];
             hr = renderManager.CreateDeviceAndSwapChainDX11(NULL, g_driverType, NULL, createDeviceFlags, featureLevels, numFeatureLevels,
-                D3D11_SDK_VERSION, &sd, &g_pSwapChain, &renderManager.getDeviceDX11() , &g_featureLevel, &renderManager.getDeviceContextDX11());
-            
+                D3D11_SDK_VERSION, &sd, &renderManager.getSwapChainDX11(), &renderManager.getDeviceDX11(), &g_featureLevel, &renderManager.getDeviceContextDX11());
+
 
             if (SUCCEEDED(hr))
                 break;
@@ -112,10 +112,12 @@ namespace GraphicsModule
         // Create a render target view
         //ID3D11Texture2D* pBackBuffer = NULL;
         Texture2D* pBackBuffer = new Texture2D();
-        hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer->getTextureDX11());
+            
+
+        hr = renderManager.GetBufferDX11(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer->getTextureDX11());
         if (FAILED(hr))
             return hr;
-        hr = renderManager.CreateRenderTargetViewDX11(pBackBuffer->getTextureDX11(), NULL, &g_pRenderTargetView);
+        hr = renderManager.CreateRenderTargetViewDX11(pBackBuffer->getTextureDX11(), NULL, &RenderTargetView1);
         pBackBuffer->getTextureDX11()->Release();
         if (FAILED(hr))
             return hr;
@@ -134,7 +136,7 @@ namespace GraphicsModule
         descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
         descDepth.CPUAccessFlags = 0;
         descDepth.MiscFlags = 0;
-        hr = renderManager.CreateTexture2DDX11(&descDepth, NULL, &g_pDepthStencil->getTextureDX11());
+        hr = renderManager.CreateTexture2DDX11(&descDepth, NULL, &Texture->getTextureDX11());
         if (FAILED(hr))
             return hr;
 
@@ -144,7 +146,7 @@ namespace GraphicsModule
         descDSV.Format = DXGI_FORMAT_D32_FLOAT;
         descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
         descDSV.Texture2D.MipSlice = 0;
-        hr = renderManager.CreateDepthStencilViewDX11(g_pDepthStencil->getTextureDX11(), &descDSV, &g_pDepthStencilView);
+        hr = renderManager.CreateDepthStencilViewDX11(Texture->getTextureDX11(), &descDSV, &g_pDepthStencilView);
         if (FAILED(hr))
             return hr;
 
@@ -154,11 +156,11 @@ namespace GraphicsModule
         srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
         srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
         srvDesc.Texture2D.MipLevels = 1; // same as orig texture
-        hr = renderManager.CreateShaderResourceViewDX11(g_pDepthStencil->getTextureDX11(), &srvDesc, &g_pDepthStencilSRV);
+        hr = renderManager.CreateShaderResourceViewDX11(Texture->getTextureDX11(), &srvDesc, &ShaderResourceView);
         if (FAILED(hr))
             return hr;
 
-        renderManager.OMSetRenderTargetsDX11(1, &g_pRenderTargetView, g_pDepthStencilView);
+        renderManager.OMSetRenderTargetsDX11(1, &RenderTargetView1, g_pDepthStencilView);
 
         // Setup the viewport
         //D3D11_VIEWPORT vp;
@@ -373,8 +375,8 @@ namespace GraphicsModule
             return hr;
 
         // Load the Texture
-        
-        hr = D3DX11CreateShaderResourceViewFromFile(renderManager.getDeviceDX11(), "seafloor.dds", NULL, NULL, &g_pTextureRV, NULL);
+
+        hr = D3DX11CreateShaderResourceViewFromFile(renderManager.getDeviceDX11(), "ahegao.dds", NULL, NULL, &ResorceView1, NULL);
         if (FAILED(hr))
             return hr;
 
@@ -439,6 +441,133 @@ namespace GraphicsModule
         hr = renderManager.CreateRasterizerStateDX11(&desc, &g_Rasterizer2);
         if (FAILED(hr))
             return hr;
+
+
+
+
+
+
+
+        // -----------------------------------------------------------------------------------------------------------------------------------------------------------/ 
+        // ---------------------------------------------- set render target View, Shader ResourceView, and Texture ---------------------------------------------------/ 
+
+        // ----------------------------------------------------------  texture 2 ---------------------------------------------------------- //
+        Texture->ReleaseDX11();
+        // Create rt texture
+        D3D11_TEXTURE2D_DESC descTextRT2;
+        ZeroMemory(&descTextRT2, sizeof(descTextRT2));
+        descTextRT2.Width = width;
+        descTextRT2.Height = height;
+        descTextRT2.MipLevels = 1;
+        descTextRT2.ArraySize = 1;
+        descTextRT2.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        descTextRT2.SampleDesc.Count = 1;
+        descTextRT2.SampleDesc.Quality = 0;
+        descTextRT2.Usage = D3D11_USAGE_DEFAULT;
+        descTextRT2.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+        descTextRT2.CPUAccessFlags = 0;
+        descTextRT2.MiscFlags = 0;
+        hr = renderManager.CreateTexture2DDX11(&descTextRT2, NULL, &Texture->getTextureDX11());
+        if (FAILED(hr))
+            return hr;
+
+        // create the rt Shader resource view
+        D3D11_SHADER_RESOURCE_VIEW_DESC descViewRT2;
+        ZeroMemory(&descViewRT2, sizeof(descViewRT2));
+        descViewRT2.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        descViewRT2.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        descViewRT2.Texture2D.MostDetailedMip = 0;
+        descViewRT2.Texture2D.MipLevels = 1;
+        hr = renderManager.CreateShaderResourceViewDX11(Texture->getTextureDX11(), &descViewRT2, &ResorceView2);
+        if (FAILED(hr))
+            return hr;
+
+        // Create the render target view
+        hr = renderManager.CreateRenderTargetViewDX11(Texture->getTextureDX11(), NULL, &RenderTargetView2);
+        if (FAILED(hr))
+            return hr;
+
+        // ----------------------------------------------------------  texture 3 ---------------------------------------------------------- //
+        Texture->ReleaseDX11();
+        // Create rt texture
+        D3D11_TEXTURE2D_DESC descTextRT3;
+        ZeroMemory(&descTextRT3, sizeof(descTextRT3));
+        descTextRT3.Width = width;
+        descTextRT3.Height = height;
+        descTextRT3.MipLevels = 1;
+        descTextRT3.ArraySize = 1;
+        descTextRT3.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        descTextRT3.SampleDesc.Count = 1;
+        descTextRT3.SampleDesc.Quality = 0;
+        descTextRT3.Usage = D3D11_USAGE_DEFAULT;
+        descTextRT3.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+        descTextRT3.CPUAccessFlags = 0;
+        descTextRT3.MiscFlags = 0;
+        hr = renderManager.CreateTexture2DDX11(&descTextRT3, NULL, &Texture->getTextureDX11());
+        if (FAILED(hr))
+            return hr;
+
+        // create the rt Shader resource view
+        D3D11_SHADER_RESOURCE_VIEW_DESC descViewRT3;
+        ZeroMemory(&descViewRT3, sizeof(descViewRT3));
+        descViewRT3.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        descViewRT3.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        descViewRT3.Texture2D.MostDetailedMip = 0;
+        descViewRT3.Texture2D.MipLevels = 1;
+        hr = renderManager.CreateShaderResourceViewDX11(Texture->getTextureDX11(), &descViewRT3, &ResorceView3);
+        if (FAILED(hr))
+            return hr;
+
+        // Create the render target view
+        hr = renderManager.CreateRenderTargetViewDX11(Texture->getTextureDX11(), NULL, &RenderTargetView3);
+        if (FAILED(hr))
+            return hr;
+
+        // ----------------------------------------------------------  texture 4 ---------------------------------------------------------- //
+        Texture->ReleaseDX11();
+
+        // Create rt texture
+        D3D11_TEXTURE2D_DESC descTextRT4;
+        ZeroMemory(&descTextRT4, sizeof(descTextRT4));
+        descTextRT4.Width = width;
+        descTextRT4.Height = height;
+        descTextRT4.MipLevels = 1;
+        descTextRT4.ArraySize = 1;
+        descTextRT4.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        descTextRT4.SampleDesc.Count = 1;
+        descTextRT4.SampleDesc.Quality = 0;
+        descTextRT4.Usage = D3D11_USAGE_DEFAULT;
+        descTextRT4.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+        descTextRT4.CPUAccessFlags = 0;
+        descTextRT4.MiscFlags = 0;
+        hr = renderManager.CreateTexture2DDX11(&descTextRT4, NULL, &Texture->getTextureDX11());
+        if (FAILED(hr))
+            return hr;
+
+        // create the rt Shader resource view
+        D3D11_SHADER_RESOURCE_VIEW_DESC descViewRT4;
+        ZeroMemory(&descViewRT4, sizeof(descViewRT4));
+        descViewRT4.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        descViewRT4.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        descViewRT4.Texture2D.MostDetailedMip = 0;
+        descViewRT4.Texture2D.MipLevels = 1;
+        hr = renderManager.CreateShaderResourceViewDX11(Texture->getTextureDX11(), &descViewRT4, &ResorceView4);
+        if (FAILED(hr))
+            return hr;
+
+        // Create the render target view
+        hr = renderManager.CreateRenderTargetViewDX11(Texture->getTextureDX11(), NULL, &RenderTargetView4);
+        if (FAILED(hr))
+            return hr;
+
+
+
+
+
+
+
+
+
 #endif
         return S_OK;
     }
@@ -476,21 +605,11 @@ namespace GraphicsModule
         //
         // Clear the back buffer
         //
-        float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f }; // red, green, blue, alpha
-        renderManager.ClearRenderTargetViewDX11(g_pRenderTargetView, ClearColor);
 
-        //
-        // Clear the depth buffer to 1.0 (max depth)
-        //
-        renderManager.ClearDepthStencilViewDX11(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
         //
         // Update variables that change once per frame
         //
-        CBChangesEveryFrame cb;
-        cb.mWorld = XMMatrixTranspose(g_World);
-        cb.vMeshColor = g_vMeshColor;
-        renderManager.UpdateSubresourceDX11(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
 
         CBNeverChanges cbNeverChanges;
         cbNeverChanges.mView = XMMatrixTranspose(g_View);
@@ -505,19 +624,16 @@ namespace GraphicsModule
         cbNeverChanges.mView = XMMatrixTranspose(g_View);
         renderManager.UpdateSubresourceDX11(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
 
-        }
+    }
 
     void test::Render()
     {
 #if defined(DX11)
-        
 
-        /*
+
+
         //Set index buffer
-        g_pImmediateContext->OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
-        g_pImmediateContext->RSSetViewports(1, &vp);
-        g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
-        */
+
 
 
         UINT stride = sizeof(SimpleVertex);
@@ -527,7 +643,7 @@ namespace GraphicsModule
         // Render the cube
         //
         // Set the input layout
-        
+
         renderManager.IASetInputLayoutDX11(g_pVertexLayout);
         renderManager.RSSetStateDX11(g_Rasterizer);
         renderManager.IASetVertexBuffersDX11(0, 1, &g_pVertexBuffer->getyBufferDX11(), &stride, &offset);
@@ -536,19 +652,68 @@ namespace GraphicsModule
         renderManager.VSSetConstantBuffersDX11(0, 1, &g_pCBNeverChanges->getyBufferDX11());
         renderManager.VSSetConstantBuffersDX11(1, 1, &g_pCBChangeOnResize->getyBufferDX11());
         renderManager.VSSetConstantBuffersDX11(2, 1, &g_pCBChangesEveryFrame->getyBufferDX11());
-
         renderManager.PSSetShaderDX11(g_pPixelShader, NULL, 0);
         renderManager.PSSetConstantBuffersDX11(2, 1, &g_pCBChangesEveryFrame->getyBufferDX11());
-        renderManager.PSSetShaderResourcesDX11(0, 1, &g_pTextureRV);
         renderManager.PSSetSamplersDX11(0, 1, &g_pSamplerLinear);
         renderManager.DrawIndexedDX11(36, 0, 0);
-        
+
+
+
+
+
+        float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f }; // red, green, blue, alpha
         CBChangesEveryFrame cb;
+
+        // ----------------------------------------------- Cubes RenderTargetVview2 ---------------------------------------------------------//
+        renderManager.ClearRenderTargetViewDX11(RenderTargetView2, ClearColor);
+        renderManager.ClearDepthStencilViewDX11(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+        renderManager.OMSetRenderTargetsDX11(1, &RenderTargetView2, g_pDepthStencilView);
+
+
+        renderManager.PSSetShaderResourcesDX11(0, 1, &ResorceView1); //set sahder resorce view 1
+        g_World = XMMatrixTranslation(0, 0, 0);
         cb.mWorld = XMMatrixTranspose(g_World);
         cb.vMeshColor = g_vMeshColor;
         renderManager.UpdateSubresourceDX11(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
         renderManager.DrawIndexedDX11(36, 0, 0);
 
+
+        // ----------------------------------------------- Cubes RenderTargetVview3 ---------------------------------------------------------//
+        renderManager.ClearRenderTargetViewDX11(RenderTargetView3, ClearColor);
+        renderManager.ClearDepthStencilViewDX11(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+        renderManager.OMSetRenderTargetsDX11(1, &RenderTargetView3, g_pDepthStencilView);
+
+
+        renderManager.PSSetShaderResourcesDX11(0, 1, &ResorceView2); //set sahder resorce view 2
+        g_World = XMMatrixTranslation(0, 0, 0);
+        cb.mWorld = XMMatrixTranspose(g_World);
+        cb.vMeshColor = g_vMeshColor;
+        renderManager.UpdateSubresourceDX11(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
+        renderManager.DrawIndexedDX11(36, 0, 0);
+
+
+        renderManager.PSSetShaderResourcesDX11(0, 1, &ResorceView1); //set sahder resorce view 1
+        g_World = XMMatrixTranslation(3, 0, 0);
+        cb.mWorld = XMMatrixTranspose(g_World);
+        cb.vMeshColor = g_vMeshColor;
+        renderManager.UpdateSubresourceDX11(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
+        renderManager.DrawIndexedDX11(36, 0, 0);
+
+        // ----------------------------------------------- Cubes RenderTargetVview4 ---------------------------------------------------------//
+        renderManager.ClearRenderTargetViewDX11(RenderTargetView4, ClearColor);
+        renderManager.ClearDepthStencilViewDX11(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+        renderManager.OMSetRenderTargetsDX11(1, &RenderTargetView4, g_pDepthStencilView);
+
+
+        renderManager.PSSetShaderResourcesDX11(0, 1, &ResorceView3); //set sahder resorce view 3
+        g_World = XMMatrixTranslation(0, 0, 0);
+        cb.mWorld = XMMatrixTranspose(g_World);
+        cb.vMeshColor = g_vMeshColor;
+        renderManager.UpdateSubresourceDX11(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
+        renderManager.DrawIndexedDX11(36, 0, 0);
+
+
+        renderManager.PSSetShaderResourcesDX11(0, 1, &ResorceView2); //set sahder resorce view 2
         g_World = XMMatrixTranslation(3, 0, 0);
         cb.mWorld = XMMatrixTranspose(g_World);
         cb.vMeshColor = g_vMeshColor;
@@ -556,21 +721,56 @@ namespace GraphicsModule
         renderManager.DrawIndexedDX11(36, 0, 0);
 
 
+        renderManager.PSSetShaderResourcesDX11(0, 1, &ResorceView1); //set sahder resorce view 1
         g_World = XMMatrixTranslation(0, 3, 0);
         cb.mWorld = XMMatrixTranspose(g_World);
         cb.vMeshColor = g_vMeshColor;
         renderManager.UpdateSubresourceDX11(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
         renderManager.DrawIndexedDX11(36, 0, 0);
 
+
+        // ----------------------------------------------- Cubes RenderTargetVview1 ---------------------------------------------------------//
+        renderManager.ClearRenderTargetViewDX11(RenderTargetView1, ClearColor);
+        renderManager.ClearDepthStencilViewDX11(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+        renderManager.OMSetRenderTargetsDX11(1, &RenderTargetView1, g_pDepthStencilView);
+
+
+        renderManager.PSSetShaderResourcesDX11(0, 1, &ResorceView4); //set sahder resorce view 4
+        g_World = XMMatrixTranslation(0, 0, 0);
+        cb.mWorld = XMMatrixTranspose(g_World);
+        cb.vMeshColor = g_vMeshColor;
+        renderManager.UpdateSubresourceDX11(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
+        renderManager.DrawIndexedDX11(36, 0, 0);
+
+
+        renderManager.PSSetShaderResourcesDX11(0, 1, &ResorceView3); //set sahder resorce view 3
+        g_World = XMMatrixTranslation(3, 0, 0);
+        cb.mWorld = XMMatrixTranspose(g_World);
+        cb.vMeshColor = g_vMeshColor;
+        renderManager.UpdateSubresourceDX11(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
+        renderManager.DrawIndexedDX11(36, 0, 0);
+
+
+        renderManager.PSSetShaderResourcesDX11(0, 1, &ResorceView2); //set sahder resorce view 2
+        g_World = XMMatrixTranslation(0, 3, 0);
+        cb.mWorld = XMMatrixTranspose(g_World);
+        cb.vMeshColor = g_vMeshColor;
+        renderManager.UpdateSubresourceDX11(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
+        renderManager.DrawIndexedDX11(36, 0, 0);
+
+
+        renderManager.PSSetShaderResourcesDX11(0, 1, &ResorceView1); //set sahder resorce view 1
         g_World = XMMatrixTranslation(-3, 0, 0);
         cb.mWorld = XMMatrixTranspose(g_World);
         cb.vMeshColor = g_vMeshColor;
         renderManager.UpdateSubresourceDX11(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
         renderManager.DrawIndexedDX11(36, 0, 0);
 
-        //
+
+
+
+
         // Render the SAQ
-        //
         renderManager.IASetInputLayoutDX11(g_pVertexLayout2);
         renderManager.RSSetStateDX11(g_Rasterizer2);
         renderManager.IASetVertexBuffersDX11(0, 1, &g_pVertexBuffer2->getyBufferDX11(), &stride, &offset);
@@ -578,8 +778,8 @@ namespace GraphicsModule
         renderManager.VSSetShaderDX11(g_pVertexShader2, NULL, 0);
         renderManager.PSSetShaderDX11(g_pPixelShader2, NULL, 0);
         //g_pImmediateContext->DrawIndexed(6, 0, 0);
-        
-       
+
+
         //
         // Present our back buffer to our front buffer
         //
@@ -594,7 +794,7 @@ namespace GraphicsModule
         if (renderManager.getDeviceContextDX11()) renderManager.getDeviceContextDX11()->ClearState();
 
         if (g_pSamplerLinear) g_pSamplerLinear->Release();
-        if (g_pTextureRV) g_pTextureRV->Release();
+        if (ResorceView1) ResorceView1->Release();
 
         if (g_pCBNeverChanges->getyBufferDX11()) g_pCBNeverChanges->ReleaseDX11();
         if (g_pCBChangeOnResize->getyBufferDX11()) g_pCBChangeOnResize->ReleaseDX11();
@@ -606,11 +806,11 @@ namespace GraphicsModule
         if (g_pVertexShader) g_pVertexShader->Release();
         if (g_pPixelShader) g_pPixelShader->Release();
 
-        if (g_pDepthStencil->getTextureDX11()) g_pDepthStencil->ReleaseDX11();
+        if (Texture->getTextureDX11()) Texture->ReleaseDX11();
 
         if (g_pDepthStencilView) g_pDepthStencilView->Release();
-        if (g_pRenderTargetView) g_pRenderTargetView->Release();
-        if (g_pSwapChain) g_pSwapChain->Release();
+        if (RenderTargetView1) RenderTargetView1->Release();
+        if (renderManager.getSwapChainDX11()) renderManager.getSwapChainDX11()->Release();
         if (renderManager.getDeviceContextDX11()) renderManager.getDeviceContextDX11()->Release();
         if (renderManager.getDeviceDX11()) renderManager.getDeviceDX11()->Release();
 #endif

@@ -18,6 +18,12 @@
     <ClCompile Include="Graficos1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\..\Development\Externals\imgui-1.8\imgui_draw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\..\..\..\Development\Externals\imgui-1.8\imgui_tables.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\..\..\..\..\Development\Externals\imgui-1.8\imgui_widgets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -25,12 +31,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\..\..\..\..\Development\Externals\imgui-1.8\imgui_demo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\..\Development\Externals\imgui-1.8\imgui_draw.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\..\..\..\Development\Externals\imgui-1.8\imgui_tables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\..\..\..\..\Development\Externals\imgui-1.8\backends\imgui_impl_win32.cpp">

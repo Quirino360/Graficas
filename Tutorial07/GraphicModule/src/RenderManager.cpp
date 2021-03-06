@@ -12,6 +12,9 @@ void RenderManager::ReleaseDX11()
 {
 }
 
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------------------------------------- Device ---------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 HRESULT RenderManager::CreateDeviceAndSwapChainDX11(IDXGIAdapter* _pAdapter, D3D_DRIVER_TYPE _DriverType, HMODULE _Software, UINT _Flags, const D3D_FEATURE_LEVEL* _pFeatureLevels, UINT _FeatureLevels, UINT _SDKVersion, const DXGI_SWAP_CHAIN_DESC* _pSwapChainDesc, IDXGISwapChain** _ppSwapChain, ID3D11Device** _ppDevice, D3D_FEATURE_LEVEL* _pFeatureLevel, ID3D11DeviceContext** _ppImmediateContext)
 {
 	return  D3D11CreateDeviceAndSwapChain(_pAdapter, _DriverType, _Software, _Flags, _pFeatureLevels, _FeatureLevels, _SDKVersion, _pSwapChainDesc, _ppSwapChain, _ppDevice, _pFeatureLevel, _ppImmediateContext);
@@ -156,4 +159,23 @@ void RenderManager::PSSetSamplersDX11(UINT _StartSlot, UINT _NumSamplers, ID3D11
 void RenderManager::DrawIndexedDX11(UINT _IndexCount, UINT _StartIndexLocation, INT _BaseVertexLocation)
 {
 	ImmediateContextDX11->DrawIndexed(_IndexCount, _StartIndexLocation, _BaseVertexLocation);
+}
+
+
+
+
+
+
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------- Eswap Chain -----------------------------------------------------------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
+
+HRESULT RenderManager::GetBufferDX11(UINT _Buffer, REFIID _riid, void** _ppSurface)
+{
+	return SwapChainDX11->GetBuffer(_Buffer, _riid, _ppSurface);
+}
+
+HRESULT RenderManager::PresentDX11(UINT SyncInterval, UINT Flags)
+{
+	return SwapChainDX11->Present(SyncInterval, Flags);
 }

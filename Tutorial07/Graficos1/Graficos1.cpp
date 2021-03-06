@@ -33,77 +33,77 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _m
 LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
 {
     auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
-  // Handle UI inputs
-  if (ImGui_ImplWin32_WndProcHandler(_hwnd, _msg, _wParam, _lParam))
-    return 1;
+    // Handle UI inputs
+    if (ImGui_ImplWin32_WndProcHandler(_hwnd, _msg, _wParam, _lParam))
+        return 1;
 
-  // Handle Window inputs
-  switch (_msg)
-  {
-  case WM_SIZE:
-    //if (g_pd3dDevice != NULL && _wParam != SIZE_MINIMIZED)
+    // Handle Window inputs
+    switch (_msg)
+    {
+    case WM_SIZE:
+        //if (g_pd3dDevice != NULL && _wParam != SIZE_MINIMIZED)
     {
     }
     return 0;
     break;
 
-  case WM_SYSCOMMAND:
-    if ((_wParam & 0xfff0) == SC_KEYMENU)
-    {
-      return 0;
+    case WM_SYSCOMMAND:
+        if ((_wParam & 0xfff0) == SC_KEYMENU)
+        {
+            return 0;
+        }
+        break;
+
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        break;
+
+    case WM_KEYDOWN: {
+        UINT key = LOWORD(_wParam);
+        switch (key)
+        {
+        case 37:    //Left key 
+            testOBj.camera.move(-1, 0, 0);
+            break;
+        case 38:    //Up key
+            testOBj.camera.move(0, 1, 0);
+            break;
+        case 39:    //Right key
+            testOBj.camera.move(1, 0, 0);
+            break;
+        case 40:    //Down key 
+            testOBj.camera.move(0, -1, 0);
+            break;
+        case 'A':    //Key A
+            testOBj.camera.move(0, 0, 1);
+            break;
+        case 'D':
+            testOBj.camera.move(0, 0, -1);
+            break;
+
+        case 9:     //Tab 
+        {
+            testOBj.cameraChange = !testOBj.cameraChange;
+            if (testOBj.cameraChange)
+            {
+                testOBj.g_Projection = XMMATRIX(testOBj.camera.getMatrixPerspective().matrix4);
+            }
+            else
+            {
+                testOBj.g_Projection = XMMATRIX(testOBj.camera.getMatrixOrthographic().matrix4);
+            }
+            GraphicsModule::CBChangeOnResize cbChangesOnResize;
+            cbChangesOnResize.mProjection = XMMatrixTranspose(testOBj.g_Projection);
+            testOBj.renderManager.getDeviceContextDX11()->UpdateSubresource(testOBj.g_pCBChangeOnResize->getyBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
+            break;
+        }
+
+        default:
+            break;
+        }
     }
-    break;
-
-  case WM_DESTROY:
-    PostQuitMessage(0);
-    break;
-
-  case WM_KEYDOWN: {
-      UINT key = LOWORD(_wParam);
-      switch (key)
-      {
-      case 37:    //Left key 
-          testOBj.camera.move(-1, 0, 0);
-          break;
-      case 38:    //Up key
-          testOBj.camera.move(0, 1, 0);
-          break;
-      case 39:    //Right key
-          testOBj.camera.move(1, 0, 0);
-          break;
-      case 40:    //Down key 
-          testOBj.camera.move(0, -1, 0);
-          break;
-      case 'A':    //Key A
-          testOBj.camera.move(0, 0, 1);
-          break;
-      case 'D':
-          testOBj.camera.move(0, 0, -1);
-          break;
-
-      case 9:     //Tab 
-      {
-          testOBj.cameraChange = !testOBj.cameraChange;
-          if (testOBj.cameraChange)
-          {
-              testOBj.g_Projection = XMMATRIX(testOBj.camera.getMatrixPerspective().matrix4);
-          }
-          else
-          {
-              testOBj.g_Projection = XMMATRIX(testOBj.camera.getMatrixOrthographic().matrix4);
-          }
-          GraphicsModule::CBChangeOnResize cbChangesOnResize;
-          cbChangesOnResize.mProjection = XMMatrixTranspose(testOBj.g_Projection);
-          testOBj.renderManager.getDeviceContextDX11()->UpdateSubresource(testOBj.g_pCBChangeOnResize->getyBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
-          break;
-      }
-
-      default:
-          break;
-      }
-  }
-  }
-  return ::DefWindowProc(_hwnd, _msg, _wParam, _lParam);
+    }
+    return ::DefWindowProc(_hwnd, _msg, _wParam, _lParam);
 }
 
 /**
@@ -115,37 +115,37 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
  */
 HRESULT InitWindow(LONG _width, LONG _height)
 {
-  // Register class
-  WNDCLASSEX wcex;
-  wcex.cbSize = sizeof(WNDCLASSEX);
-  wcex.style = CS_HREDRAW | CS_VREDRAW;
-  wcex.lpfnWndProc = WndProc;
-  wcex.cbClsExtra = 0;
-  wcex.cbWndExtra = 0;
-  wcex.hInstance = nullptr;
-  wcex.hIcon = nullptr;
-  wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-  wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-  wcex.lpszMenuName = NULL;
-  wcex.lpszClassName = "TutorialWindowClass";
-  wcex.hIconSm = nullptr;
-  if (!RegisterClassEx(&wcex))
-  {
-    return E_FAIL;
-  }
+    // Register class
+    WNDCLASSEX wcex;
+    wcex.cbSize = sizeof(WNDCLASSEX);
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WndProc;
+    wcex.cbClsExtra = 0;
+    wcex.cbWndExtra = 0;
+    wcex.hInstance = nullptr;
+    wcex.hIcon = nullptr;
+    wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszMenuName = NULL;
+    wcex.lpszClassName = "TutorialWindowClass";
+    wcex.hIconSm = nullptr;
+    if (!RegisterClassEx(&wcex))
+    {
+        return E_FAIL;
+    }
 
-  // Create window
-  RECT rc = { 0, 0, _width, _height };
-  AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
-  g_hwnd = CreateWindow("TutorialWindowClass", "Graficos 1", WS_OVERLAPPEDWINDOW,
-                        CW_USEDEFAULT, CW_USEDEFAULT, _width, _height, NULL, NULL, NULL, NULL);
-  if (!g_hwnd)
-  {
-    return E_FAIL;
-  }
-  ShowWindow(g_hwnd, SW_SHOWNORMAL);
+    // Create window
+    RECT rc = { 0, 0, _width, _height };
+    AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
+    g_hwnd = CreateWindow("TutorialWindowClass", "Graficos 1", WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, CW_USEDEFAULT, _width, _height, NULL, NULL, NULL, NULL);
+    if (!g_hwnd)
+    {
+        return E_FAIL;
+    }
+    ShowWindow(g_hwnd, SW_SHOWNORMAL);
 
-  return S_OK;
+    return S_OK;
 }
 
 /**
@@ -155,44 +155,44 @@ HRESULT InitWindow(LONG _width, LONG _height)
  */
 HRESULT InitImgUI()
 {
-  // Setup Dear ImGui context
-  IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
 
-  // Setup Dear ImGui style
-  ImGui::StyleColorsDark();
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
 
-  // Setup Platform/Renderer back ends
-  ImGui_ImplWin32_Init(g_hwnd);
+    // Setup Platform/Renderer back ends
+    ImGui_ImplWin32_Init(g_hwnd);
 #if defined(DX11)
-  auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
-  
-  ImGui_ImplDX11_Init(testOBj.renderManager.getDeviceDX11(), testOBj.renderManager.getDeviceContextDX11());
+    auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
+
+    ImGui_ImplDX11_Init(testOBj.renderManager.getDeviceDX11(), testOBj.renderManager.getDeviceContextDX11());
 #endif
 
-  return S_OK;
+    return S_OK;
 }
 
 void UIRender()
 {
-  // Start the Dear ImGui frame
+    // Start the Dear ImGui frame
 #if defined(DX11)
-  ImGui_ImplDX11_NewFrame();
+    ImGui_ImplDX11_NewFrame();
 #endif
 
-  ImGui_ImplWin32_NewFrame();
-  ImGui::NewFrame();
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
 
-  // example window
-  if (ImGui::Begin("Another Window", nullptr))
-  {
-  }
-  ImGui::End();
+    // example window
+    if (ImGui::Begin("Another Window", nullptr))
+    {
+    }
+    ImGui::End();
 
-  // render UI
-  ImGui::Render();
+    // render UI
+    ImGui::Render();
 #if defined(DX11)
-  ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 #endif
 }
 
@@ -204,7 +204,7 @@ void Render()
     UIRender();
 #endif
 #if defined(DX11)
-    testOBj.g_pSwapChain->Present(0, 0);
+    testOBj.renderManager.PresentDX11(0, 0);
 #endif
 }
 
@@ -215,53 +215,53 @@ void Render()
  */
 int main()
 {
-  // create the window and console
-  if (FAILED(InitWindow(1080, 720)))
-  {
-    DestroyWindow(g_hwnd);
-    return 0;
-  }
+    // create the window and console
+    if (FAILED(InitWindow(1080, 720)))
+    {
+        DestroyWindow(g_hwnd);
+        return 0;
+    }
 
-  auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
-  // create Graphic API interface
-  if (FAILED(testOBj.InitDevice(g_hwnd)))
-  {
-      testOBj.CleanupDevice();
-    return 0;
-  }
+    auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
+    // create Graphic API interface
+    if (FAILED(testOBj.InitDevice(g_hwnd)))
+    {
+        testOBj.CleanupDevice();
+        return 0;
+    }
 
-  // create UI
-  if (FAILED(InitImgUI()))
-  {
+    // create UI
+    if (FAILED(InitImgUI()))
+    {
+        ImGui_ImplDX11_Shutdown();
+        ImGui_ImplWin32_Shutdown();
+        ImGui::DestroyContext();
+        return 0;
+    }
+
+    // main loop
+    MSG msg = { 0 };
+    while (WM_QUIT != msg.message)
+    {
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+        else
+        {
+            testOBj.Update();
+            Render();
+        }
+    }
+
+
+    // clean resources
     ImGui_ImplDX11_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
-    return 0;
-  }
+    testOBj.CleanupDevice();
+    DestroyWindow(g_hwnd);
+    return (int)msg.wParam;
 
-  // main loop
-  MSG msg = { 0 };
-  while (WM_QUIT != msg.message)
-  {
-    if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-    {
-      TranslateMessage(&msg);
-      DispatchMessage(&msg);
-    }
-    else
-    {
-        testOBj.Update();
-        Render();
-    }
-  }
-
-  
-  // clean resources
-  ImGui_ImplDX11_Shutdown();
-  ImGui_ImplWin32_Shutdown();
-  ImGui::DestroyContext();
-  testOBj.CleanupDevice();
-  DestroyWindow(g_hwnd);
-  return (int)msg.wParam;
-  
 }
