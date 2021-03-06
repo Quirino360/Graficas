@@ -7,6 +7,7 @@ RenderManager::RenderManager()
 RenderManager::~RenderManager()
 {
 }
+#if defined(DX11)
 
 void RenderManager::ReleaseDX11()
 {
@@ -179,3 +180,4 @@ HRESULT RenderManager::PresentDX11(UINT SyncInterval, UINT Flags)
 {
 	return SwapChainDX11->Present(SyncInterval, Flags);
 }
+#endif

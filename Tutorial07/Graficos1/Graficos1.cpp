@@ -58,6 +58,7 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
         PostQuitMessage(0);
         break;
 
+#if defined(DX11)
     case WM_KEYDOWN: {
         UINT key = LOWORD(_wParam);
         switch (key)
@@ -102,6 +103,7 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
             break;
         }
     }
+#endif
     }
     return ::DefWindowProc(_hwnd, _msg, _wParam, _lParam);
 }

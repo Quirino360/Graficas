@@ -579,6 +579,7 @@ namespace GraphicsModule
 
     void test::Update()
     {
+#if defined(DX11)
         // Update our time
         static float t = 0.0f;
         if (g_driverType == D3D_DRIVER_TYPE_REFERENCE)
@@ -628,7 +629,7 @@ namespace GraphicsModule
         g_View = XMMATRIX(camera.getViewMatrix().matrix4);
         cbNeverChanges.mView = XMMatrixTranspose(g_View);
         renderManager.UpdateSubresourceDX11(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
-
+#endif
     }
 
     void test::Render()
