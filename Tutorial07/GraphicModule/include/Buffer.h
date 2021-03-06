@@ -38,6 +38,7 @@ private:
 #if defined(DX11)
     ID3D11Buffer* bufferDX11;
 #endif
+
 public:
 #if defined(DX11)
     ID3D11Buffer*& getyBufferDX11() { return bufferDX11; };

@@ -17,6 +17,7 @@
 #include "Texture2D.h"
 #include "RenderManager.h"
 #include "RenderTargetView.h"
+#include "DepthStencilView.h"
 
 namespace GraphicsModule
 {
@@ -76,7 +77,8 @@ namespace GraphicsModule
 
 
 
-        ID3D11DepthStencilView* g_pDepthStencilView = NULL;
+        DepthStencilView* g_pDepthStencilView = NULL;
+
         ID3D11VertexShader* g_pVertexShader = NULL;
         ID3D11PixelShader* g_pPixelShader = NULL;
         ID3D11InputLayout* g_pVertexLayout = NULL;
