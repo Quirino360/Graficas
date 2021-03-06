@@ -566,13 +566,6 @@ namespace GraphicsModule
             return hr;
 
 
-
-
-
-
-
-
-
 #endif
         return S_OK;
     }
@@ -599,13 +592,11 @@ namespace GraphicsModule
         GetCursorPos(newCursor);
         camera.RotateCamera(Vector3(newCursor->x, newCursor->y, 0), Vector3(oldCursor->x, oldCursor->y, 0));
 
-        // Rotate cube around the origin
-        g_World = XMMatrixRotationY(t);
 
         // Modify the color
-        g_vMeshColor.x = (sinf(t * 1.0f) + 1.0f) * 0.5f;
-        g_vMeshColor.y = (cosf(t * 3.0f) + 1.0f) * 0.5f;
-        g_vMeshColor.z = (sinf(t * 5.0f) + 1.0f) * 0.5f;
+        g_vMeshColor.x = 0.5;
+        g_vMeshColor.y = 0.5;
+        g_vMeshColor.z = 0.5;
 
 
         //
@@ -636,6 +627,22 @@ namespace GraphicsModule
     {
 #if defined(DX11)
 
+        // Update our time
+        static float t = 0.0f;
+        if (g_driverType == D3D_DRIVER_TYPE_REFERENCE)
+        {
+            t += (float)XM_PI * 0.0125f;
+        }
+        else
+        {
+            static DWORD dwTimeStart = 0;
+            DWORD dwTimeCur = GetTickCount();
+            if (dwTimeStart == 0)
+                dwTimeStart = dwTimeCur;
+            t = (dwTimeCur - dwTimeStart) / 1000.0f;
+        }
+
+        //g_World = XMMatrixRotationY(t);
 
 
         //Set index buffer
@@ -645,9 +652,6 @@ namespace GraphicsModule
         UINT stride = sizeof(SimpleVertex);
         UINT offset = 0;
 
-        //
-        // Render the cube
-        //
         // Set the input layout
 
         renderManager.IASetInputLayoutDX11(g_pVertexLayout);
