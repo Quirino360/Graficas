@@ -10,11 +10,13 @@
 #include <xnamath.h>
 #endif
 
+
 #include"Camera.h"
 #include "Mesh.h"
 #include "Buffer.h"
 #include "Texture2D.h"
 #include "RenderManager.h"
+#include "RenderTargetView.h"
 
 namespace GraphicsModule
 {
@@ -113,17 +115,17 @@ namespace GraphicsModule
 
         ID3D11ShaderResourceView* ResorceView1 = NULL;
         ID3D11ShaderResourceView* ShaderResourceView = NULL;
-        ID3D11RenderTargetView* RenderTargetView1 = NULL;
+        RenderTargetView* RenderTargetView1 = NULL;
 
 
         ID3D11ShaderResourceView* ResorceView2 = NULL;
-        ID3D11RenderTargetView* RenderTargetView2 = NULL;
+        RenderTargetView* RenderTargetView2 = NULL;
 
         ID3D11ShaderResourceView* ResorceView3 = NULL;
-        ID3D11RenderTargetView* RenderTargetView3 = NULL;
+        RenderTargetView* RenderTargetView3 = NULL;
 
         ID3D11ShaderResourceView* ResorceView4 = NULL;
-        ID3D11RenderTargetView* RenderTargetView4 = NULL;
+        RenderTargetView* RenderTargetView4 = NULL;
 
 
 

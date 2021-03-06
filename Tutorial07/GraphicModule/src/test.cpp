@@ -43,6 +43,10 @@ namespace GraphicsModule
         g_pCBChangesEveryFrame = new Buffer();
         g_pVertexBuffer2 = new Buffer();
         g_pIndexBuffer2 = new Buffer();
+        RenderTargetView1 = new RenderTargetView();
+        RenderTargetView2 = new RenderTargetView();
+        RenderTargetView3 = new RenderTargetView();
+        RenderTargetView4 = new RenderTargetView();
     }
 #endif
 
@@ -117,7 +121,7 @@ namespace GraphicsModule
         hr = renderManager.GetBufferDX11(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer->getTextureDX11());
         if (FAILED(hr))
             return hr;
-        hr = renderManager.CreateRenderTargetViewDX11(pBackBuffer->getTextureDX11(), NULL, &RenderTargetView1);
+        hr = renderManager.CreateRenderTargetViewDX11(pBackBuffer->getTextureDX11(), NULL, &RenderTargetView1->getRenderTargetViewDX11());
         pBackBuffer->getTextureDX11()->Release();
         if (FAILED(hr))
             return hr;
@@ -160,7 +164,7 @@ namespace GraphicsModule
         if (FAILED(hr))
             return hr;
 
-        renderManager.OMSetRenderTargetsDX11(1, &RenderTargetView1, g_pDepthStencilView);
+        renderManager.OMSetRenderTargetsDX11(1, &RenderTargetView1->getRenderTargetViewDX11(), g_pDepthStencilView);
 
         // Setup the viewport
         //D3D11_VIEWPORT vp;
@@ -483,7 +487,7 @@ namespace GraphicsModule
             return hr;
 
         // Create the render target view
-        hr = renderManager.CreateRenderTargetViewDX11(Texture->getTextureDX11(), NULL, &RenderTargetView2);
+        hr = renderManager.CreateRenderTargetViewDX11(Texture->getTextureDX11(), NULL, &RenderTargetView2->getRenderTargetViewDX11());
         if (FAILED(hr))
             return hr;
 
@@ -519,7 +523,7 @@ namespace GraphicsModule
             return hr;
 
         // Create the render target view
-        hr = renderManager.CreateRenderTargetViewDX11(Texture->getTextureDX11(), NULL, &RenderTargetView3);
+        hr = renderManager.CreateRenderTargetViewDX11(Texture->getTextureDX11(), NULL, &RenderTargetView3->getRenderTargetViewDX11());
         if (FAILED(hr))
             return hr;
 
@@ -556,7 +560,7 @@ namespace GraphicsModule
             return hr;
 
         // Create the render target view
-        hr = renderManager.CreateRenderTargetViewDX11(Texture->getTextureDX11(), NULL, &RenderTargetView4);
+        hr = renderManager.CreateRenderTargetViewDX11(Texture->getTextureDX11(), NULL, &RenderTargetView4->getRenderTargetViewDX11());
         if (FAILED(hr))
             return hr;
 
@@ -665,9 +669,9 @@ namespace GraphicsModule
         CBChangesEveryFrame cb;
 
         // ----------------------------------------------- Cubes RenderTargetVview2 ---------------------------------------------------------//
-        renderManager.ClearRenderTargetViewDX11(RenderTargetView2, ClearColor);
+        renderManager.ClearRenderTargetViewDX11(RenderTargetView2->getRenderTargetViewDX11(), ClearColor);
         renderManager.ClearDepthStencilViewDX11(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
-        renderManager.OMSetRenderTargetsDX11(1, &RenderTargetView2, g_pDepthStencilView);
+        renderManager.OMSetRenderTargetsDX11(1, &RenderTargetView2->getRenderTargetViewDX11(), g_pDepthStencilView);
 
 
         renderManager.PSSetShaderResourcesDX11(0, 1, &ResorceView1); //set sahder resorce view 1
@@ -679,9 +683,9 @@ namespace GraphicsModule
 
 
         // ----------------------------------------------- Cubes RenderTargetVview3 ---------------------------------------------------------//
-        renderManager.ClearRenderTargetViewDX11(RenderTargetView3, ClearColor);
+        renderManager.ClearRenderTargetViewDX11(RenderTargetView3->getRenderTargetViewDX11(), ClearColor);
         renderManager.ClearDepthStencilViewDX11(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
-        renderManager.OMSetRenderTargetsDX11(1, &RenderTargetView3, g_pDepthStencilView);
+        renderManager.OMSetRenderTargetsDX11(1, &RenderTargetView3->getRenderTargetViewDX11(), g_pDepthStencilView);
 
 
         renderManager.PSSetShaderResourcesDX11(0, 1, &ResorceView2); //set sahder resorce view 2
@@ -700,9 +704,9 @@ namespace GraphicsModule
         renderManager.DrawIndexedDX11(36, 0, 0);
 
         // ----------------------------------------------- Cubes RenderTargetVview4 ---------------------------------------------------------//
-        renderManager.ClearRenderTargetViewDX11(RenderTargetView4, ClearColor);
+        renderManager.ClearRenderTargetViewDX11(RenderTargetView4->getRenderTargetViewDX11(), ClearColor);
         renderManager.ClearDepthStencilViewDX11(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
-        renderManager.OMSetRenderTargetsDX11(1, &RenderTargetView4, g_pDepthStencilView);
+        renderManager.OMSetRenderTargetsDX11(1, &RenderTargetView4->getRenderTargetViewDX11(), g_pDepthStencilView);
 
 
         renderManager.PSSetShaderResourcesDX11(0, 1, &ResorceView3); //set sahder resorce view 3
@@ -730,9 +734,9 @@ namespace GraphicsModule
 
 
         // ----------------------------------------------- Cubes RenderTargetVview1 ---------------------------------------------------------//
-        renderManager.ClearRenderTargetViewDX11(RenderTargetView1, ClearColor);
+        renderManager.ClearRenderTargetViewDX11(RenderTargetView1->getRenderTargetViewDX11(), ClearColor);
         renderManager.ClearDepthStencilViewDX11(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
-        renderManager.OMSetRenderTargetsDX11(1, &RenderTargetView1, g_pDepthStencilView);
+        renderManager.OMSetRenderTargetsDX11(1, &RenderTargetView1->getRenderTargetViewDX11(), g_pDepthStencilView);
 
 
         renderManager.PSSetShaderResourcesDX11(0, 1, &ResorceView4); //set sahder resorce view 4
@@ -809,7 +813,7 @@ namespace GraphicsModule
         if (Texture->getTextureDX11()) Texture->ReleaseDX11();
 
         if (g_pDepthStencilView) g_pDepthStencilView->Release();
-        if (RenderTargetView1) RenderTargetView1->Release();
+        if (RenderTargetView1->getRenderTargetViewDX11()) RenderTargetView1->getRenderTargetViewDX11()->Release();
         if (renderManager.getSwapChainDX11()) renderManager.getSwapChainDX11()->Release();
         if (renderManager.getDeviceContextDX11()) renderManager.getDeviceContextDX11()->Release();
         if (renderManager.getDeviceDX11()) renderManager.getDeviceDX11()->Release();
