@@ -381,7 +381,7 @@ namespace GraphicsModule
 
         // Load the Texture
 
-        hr = D3DX11CreateShaderResourceViewFromFile(renderManager.getDeviceDX11(), "ahegao.dds", NULL, NULL, &ResorceView1, NULL);
+        hr = D3DX11CreateShaderResourceViewFromFile(renderManager.getDeviceDX11(), "YaNoAguanto.dds", NULL, NULL, &ResorceView1, NULL);
         if (FAILED(hr))
             return hr;
 
@@ -594,20 +594,12 @@ namespace GraphicsModule
 
 
         // Modify the color
-        g_vMeshColor.x = 0.5;
-        g_vMeshColor.y = 0.5;
-        g_vMeshColor.z = 0.5;
+        g_vMeshColor.x = 0.75;
+        g_vMeshColor.y = 0.75;
+        g_vMeshColor.z = 0.75;
 
 
-        //
-        // Clear the back buffer
-        //
-
-
-        //
-        // Update variables that change once per frame
-        //
-
+        // ------------------------------ mouse shit ----------------------------------------- //
         CBNeverChanges cbNeverChanges;
         cbNeverChanges.mView = XMMatrixTranspose(g_View);
         renderManager.UpdateSubresourceDX11(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
@@ -627,6 +619,7 @@ namespace GraphicsModule
     {
 #if defined(DX11)
 
+        /*
         // Update our time
         static float t = 0.0f;
         if (g_driverType == D3D_DRIVER_TYPE_REFERENCE)
@@ -641,19 +634,14 @@ namespace GraphicsModule
                 dwTimeStart = dwTimeCur;
             t = (dwTimeCur - dwTimeStart) / 1000.0f;
         }
+        */
 
         //g_World = XMMatrixRotationY(t);
-
-
-        //Set index buffer
-
-
 
         UINT stride = sizeof(SimpleVertex);
         UINT offset = 0;
 
         // Set the input layout
-
         renderManager.IASetInputLayoutDX11(g_pVertexLayout);
         renderManager.RSSetStateDX11(g_Rasterizer);
         renderManager.IASetVertexBuffersDX11(0, 1, &g_pVertexBuffer->getyBufferDX11(), &stride, &offset);

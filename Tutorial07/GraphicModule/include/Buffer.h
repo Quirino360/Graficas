@@ -5,6 +5,7 @@
 #include <d3dx11.h>
 #endif
 
+
 #if defined(DX11)
 enum D3D11_USAGE_DX11
 {
@@ -42,7 +43,6 @@ private:
 public:
 #if defined(DX11)
     ID3D11Buffer*& getyBufferDX11() { return bufferDX11; };
-    //void setBufferDX11(ID3D11Buffer _newValue) { *bufferDX11 = _newValue; };
 
     void ReleaseDX11();
 #endif
