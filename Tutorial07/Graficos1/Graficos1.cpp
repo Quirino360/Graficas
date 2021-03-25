@@ -5,6 +5,10 @@
 #include "imgui_impl_dx11.h"
 #include "GraphicModule.h"
 
+#include "assimp/Importer.hpp"
+#include "assimp/scene.h"
+#include "assimp/postprocess.h" //Ahorita no se usa???
+
 // -----------------Global var-----------------------------------------------------------------
 HWND g_hwnd;
 GraphicsModule::test MiObj;
@@ -32,6 +36,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _m
  */
 LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
 {
+
     auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
     // Handle UI inputs
     if (ImGui_ImplWin32_WndProcHandler(_hwnd, _msg, _wParam, _lParam))
@@ -117,6 +122,7 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
  */
 HRESULT InitWindow(LONG _width, LONG _height)
 {
+    
     // Register class
     WNDCLASSEX wcex;
     wcex.cbSize = sizeof(WNDCLASSEX);
@@ -241,6 +247,11 @@ int main()
         return 0;
     }
 
+    //Just trying this shit called assimp
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile("D:/Users/angel/Documents/GitHubs/Graficos1Lehi/Graficas/Tutorial07/Models/drakefire_pistol_low.obj",NULL);
+
+    
     // main loop
     MSG msg = { 0 };
     while (WM_QUIT != msg.message)
