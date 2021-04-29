@@ -1,6 +1,7 @@
 #include "test.h"
 
 
+
 namespace GraphicsModule
 {
 #if defined(DX11)
@@ -35,7 +36,11 @@ namespace GraphicsModule
 
     void test::InitVariables()
     {
+#if defined(DX11)
+
+
         Texture = new Texture2D();
+
         g_pVertexBuffer = new Buffer();
         g_pIndexBuffer = new Buffer();
         g_pCBNeverChanges = new Buffer();
@@ -43,12 +48,17 @@ namespace GraphicsModule
         g_pCBChangesEveryFrame = new Buffer();
         g_pVertexBuffer2 = new Buffer();
         g_pIndexBuffer2 = new Buffer();
+        g_DirLightBuffer = new Buffer();
+
         RenderTargetView1 = new RenderTargetView();
-        RenderTargetView2 = new RenderTargetView();
-        RenderTargetView3 = new RenderTargetView();
-        RenderTargetView4 = new RenderTargetView();
+        //RenderTargetView2 = new RenderTargetView();
+        //RenderTargetView3 = new RenderTargetView();
+        //RenderTargetView4 = new RenderTargetView();
         g_pDepthStencilView = new DepthStencilView();
+
+#endif 
     }
+
 #endif
 
     HRESULT test::InitDevice(HWND _hwnd)
@@ -202,6 +212,9 @@ namespace GraphicsModule
         {
             { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
             { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+            { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+
+
         };
         UINT numElements = ARRAYSIZE(layout);
 
@@ -211,37 +224,6 @@ namespace GraphicsModule
         if (FAILED(hr))
             return hr;
 
-        // Compile the vertex shader
-        ID3DBlob* pVSBlob2 = NULL;
-        hr = CompileShaderFromFile("Limpio.fx", "VS", "vs_4_0", &pVSBlob2);
-        if (FAILED(hr))
-        {
-            MessageBox(NULL,
-                "The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", "Error", MB_OK);
-            return hr;
-        }
-
-        // Create the vertex shader
-        hr = renderManager.CreateVertexShaderDX11(pVSBlob2->GetBufferPointer(), pVSBlob2->GetBufferSize(), NULL, &g_pVertexShader2);
-        if (FAILED(hr))
-        {
-            pVSBlob2->Release();
-            return hr;
-        }
-
-        // Define the input layout
-        D3D11_INPUT_ELEMENT_DESC layout2[] =
-        {
-            { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-            { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        };
-        UINT numElements2 = ARRAYSIZE(layout2);
-
-        // Create the input layout
-        hr = renderManager.CreateInputLayoutDX11(layout2, numElements2, pVSBlob2->GetBufferPointer(), pVSBlob2->GetBufferSize(), &g_pVertexLayout2);
-        pVSBlob2->Release();
-        if (FAILED(hr))
-            return hr;
 
         // Compile the pixel shader
         ID3DBlob* pPSBlob = NULL;
@@ -259,106 +241,13 @@ namespace GraphicsModule
         if (FAILED(hr))
             return hr;
 
-        // Compile the pixel shader
-        ID3DBlob* pPSBlob2 = NULL;
-        hr = CompileShaderFromFile("Limpio.fx", "PS", "ps_4_0", &pPSBlob2);
-        if (FAILED(hr))
-        {
-            MessageBox(NULL,
-                "The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", "Error", MB_OK);
-            return hr;
-        }
-
-        // Create the pixel shader
-        hr = renderManager.CreatePixelShaderDX11(pPSBlob2->GetBufferPointer(), pPSBlob2->GetBufferSize(), NULL, &g_pPixelShader2);
-        pPSBlob2->Release();
-        if (FAILED(hr))
-            return hr;
-
-        // Create vertex buffer
-        Vertex vertices[] =
-        {
-            { Vec3{-1.0f, 1.0f, -1.0f}, Vec2{0.0f, 0.0f} },
-            { Vec3{1.0f, 1.0f, -1.0f}, Vec2{1.0f, 0.0f} },
-            { Vec3{1.0f, 1.0f, 1.0f}, Vec2{1.0f, 1.0f} },
-            { Vec3{-1.0f, 1.0f, 1.0f}, Vec2{0.0f, 1.0f} },
-
-            { Vec3{-1.0f, -1.0f, -1.0f}, Vec2{0.0f, 0.0f} },
-            { Vec3{1.0f, -1.0f, -1.0f}, Vec2{1.0f, 0.0f} },
-            { Vec3{1.0f, -1.0f, 1.0f}, Vec2{1.0f, 1.0f} },
-            { Vec3{-1.0f, -1.0f, 1.0f}, Vec2{0.0f, 1.0f} },
-
-            { Vec3{-1.0f, -1.0f, 1.0f}, Vec2{0.0f, 0.0f} },
-            { Vec3{-1.0f, -1.0f, -1.0f}, Vec2{1.0f, 0.0f} },
-            { Vec3{-1.0f, 1.0f, -1.0f}, Vec2{1.0f, 1.0f} },
-            { Vec3{-1.0f, 1.0f, 1.0f}, Vec2{0.0f, 1.0f} },
-
-            { Vec3{1.0f, -1.0f, 1.0f}, Vec2{0.0f, 0.0f} },
-            { Vec3{1.0f, -1.0f, -1.0f}, Vec2{1.0f, 0.0f} },
-            { Vec3{1.0f, 1.0f, -1.0f}, Vec2{1.0f, 1.0f} },
-            { Vec3{1.0f, 1.0f, 1.0f}, Vec2{0.0f, 1.0f} },
-
-            { Vec3{-1.0f, -1.0f, -1.0f}, Vec2{0.0f, 0.0f} },
-            { Vec3{1.0f, -1.0f, -1.0f}, Vec2{1.0f, 0.0f} },
-            { Vec3{1.0f, 1.0f, -1.0f}, Vec2{1.0f, 1.0f} },
-            { Vec3{-1.0f, 1.0f, -1.0f}, Vec2{0.0f, 1.0f} },
-
-            { Vec3{-1.0f, -1.0f, 1.0f}, Vec2{0.0f, 0.0f} },
-            { Vec3{1.0f, -1.0f, 1.0f}, Vec2{1.0f, 0.0f} },
-            { Vec3{1.0f, 1.0f, 1.0f}, Vec2{1.0f, 1.0f} },
-            { Vec3{-1.0f, 1.0f, 1.0f}, Vec2{0.0f, 1.0f} },
-        };
-        mesh.setVetices(vertices, 24);
-
-        //D3D11_BUFFER_DESC bd;
-        BUFFER_DESC_DX11 bd;
-        ZeroMemory(&bd, sizeof(bd));
-        bd.Usage = D3D11_USAGE_DEFAULT_DX11;
-        bd.ByteWidth = sizeof(Vertex) * 24;
-        bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-        bd.CPUAccessFlags = 0;
-        D3D11_SUBRESOURCE_DATA InitData;
-        ZeroMemory(&InitData, sizeof(InitData));
-        InitData.pSysMem = mesh.getVertices();
-        hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), &InitData, &g_pVertexBuffer->getyBufferDX11());
-        if (FAILED(hr))
-            return hr;
-
-        // Create index buffer
-        // Create vertex buffer
-        unsigned short indices[] =
-        {
-            3,1,0,
-            2,1,3,
-
-            6,4,5,
-            7,4,6,
-
-            11,9,8,
-            10,9,11,
-
-            14,12,13,
-            15,12,14,
-
-            19,17,16,
-            18,17,19,
-
-            22,20,21,
-            23,20,22
-        };
-        mesh.setIndexBuffer(indices, 36);
-
-        bd.Usage = D3D11_USAGE_DEFAULT_DX11;
-        bd.ByteWidth = sizeof(unsigned short) * 36;
-        bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-        bd.CPUAccessFlags = 0;
-        InitData.pSysMem = mesh.getIndexBuffer();
-        hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), &InitData, &g_pIndexBuffer->getyBufferDX11());
-        if (FAILED(hr))
-            return hr;
+        //if want to set vertex and indices ists here 
 
         // Set primitive topology
         renderManager.IASetPrimitiveTopologyDX11(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+        BUFFER_DESC_DX11 bd;
+        ZeroMemory(&bd, sizeof(bd));
 
         // Create the constant buffers
         bd.Usage = D3D11_USAGE_DEFAULT_DX11;
@@ -379,9 +268,17 @@ namespace GraphicsModule
         if (FAILED(hr))
             return hr;
 
+
+        bd.ByteWidth = sizeof(DirLight);
+        hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_DirLightBuffer->getyBufferDX11());
+        if (FAILED(hr))
+            return hr;
+
+
         // Load the Texture
 
-        hr = D3DX11CreateShaderResourceViewFromFile(renderManager.getDeviceDX11(), "YaNoAguanto.dds", NULL, NULL, &ResorceView1, NULL);
+        std::string pepe = "Ahegao2k.jpg";
+        hr = D3DX11CreateShaderResourceViewFromFile(renderManager.getDeviceDX11(),pepe.c_str() , NULL, NULL, &ResorceView1, NULL);
         if (FAILED(hr))
             return hr;
 
@@ -411,10 +308,10 @@ namespace GraphicsModule
         g_View = XMMATRIX(camera.getViewMatrix().matrix4);
 
 
-
         CBNeverChanges cbNeverChanges;
         cbNeverChanges.mView = XMMatrixTranspose(g_View);
         renderManager.UpdateSubresourceDX11(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
+
 
         // Initialize the projection matrix
         camera.setMatrixPerspective(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
@@ -448,122 +345,176 @@ namespace GraphicsModule
             return hr;
 
 
+#elif defined(OGL)
+
+// configure global opengl state
+    glEnable(GL_DEPTH_TEST);
+
+    // build and compile our shader zprogram
+    //ourShader.Init("Shader1.fx", "Shader2.fx");
+    
+
+    AssimpLoadModel aLoadModel;
+    //std::string fName = OpenFileGetName(g_hwnd);
+    //testOBj.aLoadModel.loadModel(fName);
+    aLoadModel.loadModel("ZResorces/meshes/Gun/drakefire_pistol_low.obj");
+    // set up vertex data (and buffer(s)) and configure vertex attributes
+
+    
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    //glBufferData(GL_ARRAY_BUFFER, 36 * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, aLoadModel.numVertex * sizeof(Vertex), &aLoadModel.vertices[0], GL_STATIC_DRAW);
+    
+    // position attribute
+    glEnableVertexAttribArray(0);
+    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+
+    // texture coord attribute
+    glEnableVertexAttribArray(1);
+    //glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+
+    glBindVertexArray(0);
 
 
+    // load and create a texture 
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+    // set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load image, create texture and generate mipmaps
+    int width, height, nrChannels;
+    // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
+    FREE_IMAGE_FORMAT fif = FIF_UNKNOWN; //image format
+    FIBITMAP* dib(0);     //pointer to the image, once loaded
+    BYTE* bits(0); //pointer to the image data
 
 
+    //check the file signature and deduce its format
+    fif = FreeImage_GetFileType("Ahegao2k.jpg", 0);
+    if (fif == FIF_UNKNOWN)
+        fif = FreeImage_GetFIFFromFilename("Ahegao2k.jpg");
+    if (fif == FIF_UNKNOWN)
+        return false;
 
-        // -----------------------------------------------------------------------------------------------------------------------------------------------------------/ 
-        // ---------------------------------------------- set render target View, Shader ResourceView, and Texture ---------------------------------------------------/ 
+    //check that the plugin has reading capabilities and load the file
+    if (FreeImage_FIFSupportsReading(fif))
+    {
+        dib = FreeImage_Load(fif, "Ahegao2k.jpg");
+        dib = FreeImage_ConvertTo32Bits(dib);
+    }
+    if (!dib)
+        return false;
 
-        // ----------------------------------------------------------  texture 2 ---------------------------------------------------------- //
-        Texture->ReleaseDX11();
-        // Create rt texture
-        D3D11_TEXTURE2D_DESC descTextRT2;
-        ZeroMemory(&descTextRT2, sizeof(descTextRT2));
-        descTextRT2.Width = width;
-        descTextRT2.Height = height;
-        descTextRT2.MipLevels = 1;
-        descTextRT2.ArraySize = 1;
-        descTextRT2.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        descTextRT2.SampleDesc.Count = 1;
-        descTextRT2.SampleDesc.Quality = 0;
-        descTextRT2.Usage = D3D11_USAGE_DEFAULT;
-        descTextRT2.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-        descTextRT2.CPUAccessFlags = 0;
-        descTextRT2.MiscFlags = 0;
-        hr = renderManager.CreateTexture2DDX11(&descTextRT2, NULL, &Texture->getTextureDX11());
-        if (FAILED(hr))
-            return hr;
+    //retrieve the image data
+    bits = FreeImage_GetBits(dib);
+    //get the image width and height
+    width = FreeImage_GetWidth(dib);
+    height = FreeImage_GetHeight(dib);
+    //if this somehow one of these failed (they shouldn't), return failure
+    if ((bits == 0) || (width == 0) || (height == 0))
+        return false;
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    //OpenGL's image ID to map to
+    GLuint gl_texID;
+    //generate an OpenGL texture ID for this texture    
+    glGenTextures(1, &gl_texID);
+    //store the texture ID mapping
+    texture = gl_texID;
+    //bind to the new texture ID
+    glBindTexture(GL_TEXTURE_2D, gl_texID);
+    //store the texture data for OpenGL use
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, bits);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
-        // create the rt Shader resource view
-        D3D11_SHADER_RESOURCE_VIEW_DESC descViewRT2;
-        ZeroMemory(&descViewRT2, sizeof(descViewRT2));
-        descViewRT2.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        descViewRT2.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-        descViewRT2.Texture2D.MostDetailedMip = 0;
-        descViewRT2.Texture2D.MipLevels = 1;
-        hr = renderManager.CreateShaderResourceViewDX11(Texture->getTextureDX11(), &descViewRT2, &ResorceView2);
-        if (FAILED(hr))
-            return hr;
+    FreeImage_Unload(dib);
 
-        // Create the render target view
-        hr = renderManager.CreateRenderTargetViewDX11(Texture->getTextureDX11(), NULL, &RenderTargetView2->getRenderTargetViewDX11());
-        if (FAILED(hr))
-            return hr;
+    // load and create a texture 2
+    glGenTextures(1, &texture2);
+    glBindTexture(GL_TEXTURE_2D, texture2); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+    // set the texture wrapping parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load image, create texture and generate mipmaps
+    int width2, height2, nrChannels2;
+    // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
+      //image format
+    FREE_IMAGE_FORMAT fif2 = FIF_UNKNOWN;
+    //pointer to the image, once loaded
+    FIBITMAP* dib2(0);
+    //pointer to the image data
+    BYTE* bits2(0);
+    //image width and height
+    //unsigned int width(0), height(0);
 
-        // ----------------------------------------------------------  texture 3 ---------------------------------------------------------- //
-        Texture->ReleaseDX11();
-        // Create rt texture
-        D3D11_TEXTURE2D_DESC descTextRT3;
-        ZeroMemory(&descTextRT3, sizeof(descTextRT3));
-        descTextRT3.Width = width;
-        descTextRT3.Height = height;
-        descTextRT3.MipLevels = 1;
-        descTextRT3.ArraySize = 1;
-        descTextRT3.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        descTextRT3.SampleDesc.Count = 1;
-        descTextRT3.SampleDesc.Quality = 0;
-        descTextRT3.Usage = D3D11_USAGE_DEFAULT;
-        descTextRT3.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-        descTextRT3.CPUAccessFlags = 0;
-        descTextRT3.MiscFlags = 0;
-        hr = renderManager.CreateTexture2DDX11(&descTextRT3, NULL, &Texture->getTextureDX11());
-        if (FAILED(hr))
-            return hr;
+    //check the file signature and deduce its format
+    fif2 = FreeImage_GetFileType("Black.jpg", 0);
+    //if still unknown, try to guess the file format from the file extension
+    if (fif2 == FIF_UNKNOWN)
+        fif2 = FreeImage_GetFIFFromFilename("Black.jpg");
+    //if still unkown, return failure
+    if (fif2 == FIF_UNKNOWN)
+        return false;
 
-        // create the rt Shader resource view
-        D3D11_SHADER_RESOURCE_VIEW_DESC descViewRT3;
-        ZeroMemory(&descViewRT3, sizeof(descViewRT3));
-        descViewRT3.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        descViewRT3.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-        descViewRT3.Texture2D.MostDetailedMip = 0;
-        descViewRT3.Texture2D.MipLevels = 1;
-        hr = renderManager.CreateShaderResourceViewDX11(Texture->getTextureDX11(), &descViewRT3, &ResorceView3);
-        if (FAILED(hr))
-            return hr;
+    //check that the plugin has reading capabilities and load the file
+    if (FreeImage_FIFSupportsReading(fif2))
+    {
+        dib2 = FreeImage_Load(fif2, "Black.jpg");
+        dib2 = FreeImage_ConvertTo32Bits(dib2);
+    }
 
-        // Create the render target view
-        hr = renderManager.CreateRenderTargetViewDX11(Texture->getTextureDX11(), NULL, &RenderTargetView3->getRenderTargetViewDX11());
-        if (FAILED(hr))
-            return hr;
+    //if the image failed to load, return failure
+    if (!dib2)
+        return false;
 
-        // ----------------------------------------------------------  texture 4 ---------------------------------------------------------- //
-        Texture->ReleaseDX11();
+    //retrieve the image data
+    bits2 = FreeImage_GetBits(dib2);
+    //get the image width and height
+    width2 = FreeImage_GetWidth(dib2);
+    height2 = FreeImage_GetHeight(dib2);
+    //if this somehow one of these failed (they shouldn't), return failure
+    if ((bits2 == 0) || (width2 == 0) || (height2 == 0))
+        return false;
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    //OpenGL's image ID to map to
+    GLuint gl_texID2;
+    //generate an OpenGL texture ID for this texture    
+    glGenTextures(1, &gl_texID2);
+    //store the texture ID mapping
+    texture2 = gl_texID2;
+    //bind to the new texture ID
+    glBindTexture(GL_TEXTURE_2D, gl_texID2);
+    //store the texture data for OpenGL use
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width2, height2, 0, GL_BGRA, GL_UNSIGNED_BYTE, bits2);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
-        // Create rt texture
-        D3D11_TEXTURE2D_DESC descTextRT4;
-        ZeroMemory(&descTextRT4, sizeof(descTextRT4));
-        descTextRT4.Width = width;
-        descTextRT4.Height = height;
-        descTextRT4.MipLevels = 1;
-        descTextRT4.ArraySize = 1;
-        descTextRT4.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        descTextRT4.SampleDesc.Count = 1;
-        descTextRT4.SampleDesc.Quality = 0;
-        descTextRT4.Usage = D3D11_USAGE_DEFAULT;
-        descTextRT4.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-        descTextRT4.CPUAccessFlags = 0;
-        descTextRT4.MiscFlags = 0;
-        hr = renderManager.CreateTexture2DDX11(&descTextRT4, NULL, &Texture->getTextureDX11());
-        if (FAILED(hr))
-            return hr;
+    FreeImage_Unload(dib2);
 
-        // create the rt Shader resource view
-        D3D11_SHADER_RESOURCE_VIEW_DESC descViewRT4;
-        ZeroMemory(&descViewRT4, sizeof(descViewRT4));
-        descViewRT4.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        descViewRT4.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-        descViewRT4.Texture2D.MostDetailedMip = 0;
-        descViewRT4.Texture2D.MipLevels = 1;
-        hr = renderManager.CreateShaderResourceViewDX11(Texture->getTextureDX11(), &descViewRT4, &ResorceView4);
-        if (FAILED(hr))
-            return hr;
+    // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
+    // -------------------------------------------------------------------------------------------
+    ourShader.use();
+    ourShader.setInt("texture1", 0);
+    ourShader.setInt("texture2", 1);
 
-        // Create the render target view
-        hr = renderManager.CreateRenderTargetViewDX11(Texture->getTextureDX11(), NULL, &RenderTargetView4->getRenderTargetViewDX11());
-        if (FAILED(hr))
-            return hr;
 
 
 #endif
@@ -588,6 +539,14 @@ namespace GraphicsModule
             t = (dwTimeCur - dwTimeStart) / 1000.0f;
         }
 
+
+        /*m_DirLightBuffer.dir.x = 0.0f;
+        m_DirLightBuffer.dir.y = -1.0f;
+        m_DirLightBuffer.dir.z = 1.0f;
+        m_DirLightBuffer.dir.w = 0.0f;*/
+        renderManager.UpdateSubresourceDX11(g_DirLightBuffer->getyBufferDX11(), 0, NULL, &m_DirLightBuffer, 0, 0);//dir light
+
+
         *oldCursor = *newCursor;
         GetCursorPos(newCursor);
         camera.RotateCamera(Vector3(newCursor->x, newCursor->y, 0), Vector3(oldCursor->x, oldCursor->y, 0));
@@ -598,20 +557,61 @@ namespace GraphicsModule
         g_vMeshColor.y = 0.75;
         g_vMeshColor.z = 0.75;
 
-
         // ------------------------------ mouse shit ----------------------------------------- //
-        CBNeverChanges cbNeverChanges;
-        cbNeverChanges.mView = XMMatrixTranspose(g_View);
-        renderManager.UpdateSubresourceDX11(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
+        if (true == mouseMove)
+        {
+            CBNeverChanges cbNeverChanges;
+            cbNeverChanges.mView = XMMatrixTranspose(g_View);
+            renderManager.UpdateSubresourceDX11(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
 
-        CBChangeOnResize cbChangesOnResize;
-        cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
-        renderManager.UpdateSubresourceDX11(g_pCBChangeOnResize->getyBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
+            CBChangeOnResize cbChangesOnResize;
+            cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
+            renderManager.UpdateSubresourceDX11(g_pCBChangeOnResize->getyBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
 
-        // Move the mouse updating the position
-        g_View = XMMATRIX(camera.getViewMatrix().matrix4);
-        cbNeverChanges.mView = XMMatrixTranspose(g_View);
-        renderManager.UpdateSubresourceDX11(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
+            // Move the mouse updating the position
+            g_View = XMMATRIX(camera.getViewMatrix().matrix4);
+            cbNeverChanges.mView = XMMatrixTranspose(g_View);
+            renderManager.UpdateSubresourceDX11(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
+        }
+
+#elif defined (OGL)
+
+        // render
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // also clear the depth buffer now!
+
+        // bind textures on corresponding texture units
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
+
+        // activate shader
+        ourShader.use();
+
+        //-------------------------------- Projection Matrix -----------------------------------//
+        // create transformations
+        glm::mat4 model = glm::mat4(1.0f); //initialize matrix to identity matrix first
+        glm::mat4 view = glm::mat4(1.0f);
+        glm::mat4 projection = glm::mat4(1.0f);
+        model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        projection = glm::perspective(glm::radians(45.0f), (float)1080 / (float)720, 0.1f, 100.0f);
+
+        // retrieve the matrix uniform locations
+        unsigned int modelLoc = glGetUniformLocation(ourShader.ID, "model");
+        unsigned int viewLoc = glGetUniformLocation(ourShader.ID, "view");
+
+        // pass them to the shaders (3 different ways)
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
+        ourShader.setMat4("projection", projection); //Projection Matrix
+
+
+
+
+
+
 #endif
     }
 
@@ -619,49 +619,113 @@ namespace GraphicsModule
     {
 #if defined(DX11)
 
-        /*
-        // Update our time
-        static float t = 0.0f;
-        if (g_driverType == D3D_DRIVER_TYPE_REFERENCE)
-        {
-            t += (float)XM_PI * 0.0125f;
-        }
-        else
-        {
-            static DWORD dwTimeStart = 0;
-            DWORD dwTimeCur = GetTickCount();
-            if (dwTimeStart == 0)
-                dwTimeStart = dwTimeCur;
-            t = (dwTimeCur - dwTimeStart) / 1000.0f;
-        }
-        */
-
         //g_World = XMMatrixRotationY(t);
 
         UINT stride = sizeof(SimpleVertex);
         UINT offset = 0;
 
-        // Set the input layout
-        renderManager.IASetInputLayoutDX11(g_pVertexLayout);
-        renderManager.RSSetStateDX11(g_Rasterizer);
-        renderManager.IASetVertexBuffersDX11(0, 1, &g_pVertexBuffer->getyBufferDX11(), &stride, &offset);
-        renderManager.IASetIndexBufferDX11(g_pIndexBuffer->getyBufferDX11(), DXGI_FORMAT_R16_UINT, 0);
-        renderManager.VSSetShaderDX11(g_pVertexShader, NULL, 0);
-        renderManager.VSSetConstantBuffersDX11(0, 1, &g_pCBNeverChanges->getyBufferDX11());
-        renderManager.VSSetConstantBuffersDX11(1, 1, &g_pCBChangeOnResize->getyBufferDX11());
-        renderManager.VSSetConstantBuffersDX11(2, 1, &g_pCBChangesEveryFrame->getyBufferDX11());
-        renderManager.PSSetShaderDX11(g_pPixelShader, NULL, 0);
-        renderManager.PSSetConstantBuffersDX11(2, 1, &g_pCBChangesEveryFrame->getyBufferDX11());
-        renderManager.PSSetSamplersDX11(0, 1, &g_pSamplerLinear);
-        renderManager.DrawIndexedDX11(36, 0, 0);
-
-
-
-
-
         float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f }; // red, green, blue, alpha
         CBChangesEveryFrame cb;
 
+
+        // ----------------------------------------------- Print an object ---------------------------------------------------------//
+        renderManager.ClearRenderTargetViewDX11(RenderTargetView1->getRenderTargetViewDX11(), ClearColor);
+        renderManager.ClearDepthStencilViewDX11(g_pDepthStencilView->getyDepthStencilViewDX11(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+        renderManager.OMSetRenderTargetsDX11(1, &RenderTargetView1->getRenderTargetViewDX11(), g_pDepthStencilView->getyDepthStencilViewDX11());
+
+
+        renderManager.PSSetShaderResourcesDX11(0, 1, &ResorceView1); 
+        g_World = XMMatrixTranslation(0, 0, 0);
+        cb.mWorld = XMMatrixTranspose(g_World);
+        cb.vMeshColor = g_vMeshColor;
+        renderManager.UpdateSubresourceDX11(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
+
+
+        
+        // Set the input layout
+        renderManager.IASetInputLayoutDX11(g_pVertexLayout);
+        renderManager.RSSetStateDX11(g_Rasterizer);
+
+        renderManager.IASetVertexBuffersDX11(0, 1, &g_pVertexBuffer->getyBufferDX11(), &stride, &offset);//
+        renderManager.IASetIndexBufferDX11(g_pIndexBuffer->getyBufferDX11(), DXGI_FORMAT_R16_UINT, 0);//
+        renderManager.VSSetShaderDX11(g_pVertexShader, NULL, 0);//
+
+        renderManager.VSSetConstantBuffersDX11(0, 1, &g_pCBNeverChanges->getyBufferDX11());
+        renderManager.VSSetConstantBuffersDX11(1, 1, &g_pCBChangeOnResize->getyBufferDX11());
+        renderManager.VSSetConstantBuffersDX11(2, 1, &g_pCBChangesEveryFrame->getyBufferDX11());
+        renderManager.VSSetConstantBuffersDX11(3, 1, &g_DirLightBuffer->getyBufferDX11()); //vsset dirlight
+
+
+        renderManager.PSSetShaderDX11(g_pPixelShader, NULL, 0);//
+        renderManager.PSSetConstantBuffersDX11(2, 1, &g_pCBChangesEveryFrame->getyBufferDX11());
+        renderManager.PSSetSamplersDX11(0, 1, &g_pSamplerLinear);
+        //renderManager.DrawIndexedDX11(36, 0, 0);
+        renderManager.DrawIndexedDX11(aLoadModel.numIndices, 0, 0);
+
+
+        //UIRender();
+#elif defined(OGL)
+
+        // render box
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, aLoadModel.numVertex);
+#endif
+    }
+
+    void test::CleanupDevice()
+    {
+#if defined(DX11)
+        if (renderManager.getDeviceContextDX11()) renderManager.getDeviceContextDX11()->ClearState();
+
+        if (g_pSamplerLinear) g_pSamplerLinear->Release();
+        if (ResorceView1) ResorceView1->Release();
+
+        if (g_pCBNeverChanges->getyBufferDX11()) g_pCBNeverChanges->ReleaseDX11();
+        if (g_pCBChangeOnResize->getyBufferDX11()) g_pCBChangeOnResize->ReleaseDX11();
+        if (g_pCBChangesEveryFrame->getyBufferDX11()) g_pCBChangesEveryFrame->ReleaseDX11();
+        if (g_DirLightBuffer->getyBufferDX11()) g_DirLightBuffer->ReleaseDX11(); //release dir light
+
+
+        if (g_pVertexBuffer->getyBufferDX11()) g_pVertexBuffer->ReleaseDX11();
+        if (g_pIndexBuffer->getyBufferDX11()) g_pIndexBuffer->ReleaseDX11();
+
+        if (g_pVertexLayout) g_pVertexLayout->Release();
+        if (g_pVertexShader) g_pVertexShader->Release();
+        if (g_pPixelShader) g_pPixelShader->Release();
+
+        if (Texture->getTextureDX11()) Texture->ReleaseDX11();
+
+        if (g_pDepthStencilView->getyDepthStencilViewDX11()) g_pDepthStencilView->getyDepthStencilViewDX11()->Release();
+        if (RenderTargetView1->getRenderTargetViewDX11()) RenderTargetView1->getRenderTargetViewDX11()->Release();
+        if (renderManager.getSwapChainDX11()) renderManager.getSwapChainDX11()->Release();
+        if (renderManager.getDeviceContextDX11()) renderManager.getDeviceContextDX11()->Release();
+        if (renderManager.getDeviceDX11()) renderManager.getDeviceDX11()->Release();
+
+#elif defined(OGL)
+
+        glDeleteVertexArrays(1, &VAO);
+        glDeleteBuffers(1, &VBO);
+
+#endif
+    }
+
+
+    extern test& GetTestObj(HWND _hwnd)
+    {
+        static test* pTest = nullptr;
+        if (pTest == nullptr)
+        {
+            pTest = new test();
+            pTest->InitDevice(_hwnd);
+        }
+        return *pTest;
+    }
+}
+
+
+
+
+/*
         // ----------------------------------------------- Cubes RenderTargetVview2 ---------------------------------------------------------//
         renderManager.ClearRenderTargetViewDX11(RenderTargetView2->getRenderTargetViewDX11(), ClearColor);
         renderManager.ClearDepthStencilViewDX11(g_pDepthStencilView->getyDepthStencilViewDX11(), D3D11_CLEAR_DEPTH, 1.0f, 0);
@@ -765,64 +829,130 @@ namespace GraphicsModule
         renderManager.DrawIndexedDX11(36, 0, 0);
 
 
-
-
-
+                /*
         // Render the SAQ
         renderManager.IASetInputLayoutDX11(g_pVertexLayout2);
         renderManager.RSSetStateDX11(g_Rasterizer2);
-        renderManager.IASetVertexBuffersDX11(0, 1, &g_pVertexBuffer2->getyBufferDX11(), &stride, &offset);
+        renderManager.IASetVertexBuffersDX11(0, 1, &g_pVertexBuffer->getyBufferDX11(), &stride, &offset);
         renderManager.IASetIndexBufferDX11(g_pIndexBuffer2->getyBufferDX11(), DXGI_FORMAT_R16_UINT, 0);
-        renderManager.VSSetShaderDX11(g_pVertexShader2, NULL, 0);
-        renderManager.PSSetShaderDX11(g_pPixelShader2, NULL, 0);
-        //g_pImmediateContext->DrawIndexed(6, 0, 0);
+        renderManager.VSSetShaderDX11(g_pVertexShader, NULL, 0);
+        renderManager.PSSetShaderDX11(g_pPixelShader, NULL, 0);
+        //g_pImmediateContext->DrawIndexed(6, 0, 0);*/
 
 
-        //
-        // Present our back buffer to our front buffer
-        //
+        // -----------------------------------------------------------------------------------------------------------------------------------------------------------/ 
+        // ---------------------------------------------- set render target View, Shader ResourceView, and Texture ---------------------------------------------------/ 
 
-        //UIRender();
-#endif
-    }
-
-    void test::CleanupDevice()
-    {
-#if defined(DX11)
-        if (renderManager.getDeviceContextDX11()) renderManager.getDeviceContextDX11()->ClearState();
-
-        if (g_pSamplerLinear) g_pSamplerLinear->Release();
-        if (ResorceView1) ResorceView1->Release();
-
-        if (g_pCBNeverChanges->getyBufferDX11()) g_pCBNeverChanges->ReleaseDX11();
-        if (g_pCBChangeOnResize->getyBufferDX11()) g_pCBChangeOnResize->ReleaseDX11();
-        if (g_pCBChangesEveryFrame->getyBufferDX11()) g_pCBChangesEveryFrame->ReleaseDX11();
-        if (g_pVertexBuffer->getyBufferDX11()) g_pVertexBuffer->ReleaseDX11();
-        if (g_pIndexBuffer->getyBufferDX11()) g_pIndexBuffer->ReleaseDX11();
-
-        if (g_pVertexLayout) g_pVertexLayout->Release();
-        if (g_pVertexShader) g_pVertexShader->Release();
-        if (g_pPixelShader) g_pPixelShader->Release();
-
-        if (Texture->getTextureDX11()) Texture->ReleaseDX11();
-
-        if (g_pDepthStencilView->getyDepthStencilViewDX11()) g_pDepthStencilView->getyDepthStencilViewDX11()->Release();
-        if (RenderTargetView1->getRenderTargetViewDX11()) RenderTargetView1->getRenderTargetViewDX11()->Release();
-        if (renderManager.getSwapChainDX11()) renderManager.getSwapChainDX11()->Release();
-        if (renderManager.getDeviceContextDX11()) renderManager.getDeviceContextDX11()->Release();
-        if (renderManager.getDeviceDX11()) renderManager.getDeviceDX11()->Release();
-#endif
-    }
+        // ----------------------------------------------------------  texture 2 ---------------------------------------------------------- //
+        /*
+        Texture->ReleaseDX11();
+        // Create rt texture
+        D3D11_TEXTURE2D_DESC descTextRT2;
+        ZeroMemory(&descTextRT2, sizeof(descTextRT2));
+        descTextRT2.Width = width;
+        descTextRT2.Height = height;
+        descTextRT2.MipLevels = 1;
+        descTextRT2.ArraySize = 1;
+        descTextRT2.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        descTextRT2.SampleDesc.Count = 1;
+        descTextRT2.SampleDesc.Quality = 0;
+        descTextRT2.Usage = D3D11_USAGE_DEFAULT;
+        descTextRT2.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+        descTextRT2.CPUAccessFlags = 0;
+        descTextRT2.MiscFlags = 0;
+        hr = renderManager.CreateTexture2DDX11(&descTextRT2, NULL, &Texture->getTextureDX11());
+        if (FAILED(hr))
+            return hr;
 
 
-    extern test& GetTestObj(HWND _hwnd)
-    {
-        static test* pTest = nullptr;
-        if (pTest == nullptr)
-        {
-            pTest = new test();
-            pTest->InitDevice(_hwnd);
-        }
-        return *pTest;
-    }
-}
+        // create the rt Shader resource view
+        D3D11_SHADER_RESOURCE_VIEW_DESC descViewRT2;
+        ZeroMemory(&descViewRT2, sizeof(descViewRT2));
+        descViewRT2.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        descViewRT2.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        descViewRT2.Texture2D.MostDetailedMip = 0;
+        descViewRT2.Texture2D.MipLevels = 1;
+        hr = renderManager.CreateShaderResourceViewDX11(Texture->getTextureDX11(), &descViewRT2, &ResorceView2);
+        if (FAILED(hr))
+            return hr;
+
+
+
+        // Create the render target view
+        hr = renderManager.CreateRenderTargetViewDX11(Texture->getTextureDX11(), NULL, &RenderTargetView2->getRenderTargetViewDX11());
+        if (FAILED(hr))
+            return hr;
+
+        // ----------------------------------------------------------  texture 3 ---------------------------------------------------------- //
+        Texture->ReleaseDX11();
+        // Create rt texture
+        D3D11_TEXTURE2D_DESC descTextRT3;
+        ZeroMemory(&descTextRT3, sizeof(descTextRT3));
+        descTextRT3.Width = width;
+        descTextRT3.Height = height;
+        descTextRT3.MipLevels = 1;
+        descTextRT3.ArraySize = 1;
+        descTextRT3.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        descTextRT3.SampleDesc.Count = 1;
+        descTextRT3.SampleDesc.Quality = 0;
+        descTextRT3.Usage = D3D11_USAGE_DEFAULT;
+        descTextRT3.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+        descTextRT3.CPUAccessFlags = 0;
+        descTextRT3.MiscFlags = 0;
+        hr = renderManager.CreateTexture2DDX11(&descTextRT3, NULL, &Texture->getTextureDX11());
+        if (FAILED(hr))
+            return hr;
+
+        // create the rt Shader resource view
+        D3D11_SHADER_RESOURCE_VIEW_DESC descViewRT3;
+        ZeroMemory(&descViewRT3, sizeof(descViewRT3));
+        descViewRT3.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        descViewRT3.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        descViewRT3.Texture2D.MostDetailedMip = 0;
+        descViewRT3.Texture2D.MipLevels = 1;
+        hr = renderManager.CreateShaderResourceViewDX11(Texture->getTextureDX11(), &descViewRT3, &ResorceView3);
+        if (FAILED(hr))
+            return hr;
+
+        // Create the render target view
+        hr = renderManager.CreateRenderTargetViewDX11(Texture->getTextureDX11(), NULL, &RenderTargetView3->getRenderTargetViewDX11());
+        if (FAILED(hr))
+            return hr;
+
+        // ----------------------------------------------------------  texture 4 ---------------------------------------------------------- //
+        Texture->ReleaseDX11();
+
+        // Create rt texture
+        D3D11_TEXTURE2D_DESC descTextRT4;
+        ZeroMemory(&descTextRT4, sizeof(descTextRT4));
+        descTextRT4.Width = width;
+        descTextRT4.Height = height;
+        descTextRT4.MipLevels = 1;
+        descTextRT4.ArraySize = 1;
+        descTextRT4.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        descTextRT4.SampleDesc.Count = 1;
+        descTextRT4.SampleDesc.Quality = 0;
+        descTextRT4.Usage = D3D11_USAGE_DEFAULT;
+        descTextRT4.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+        descTextRT4.CPUAccessFlags = 0;
+        descTextRT4.MiscFlags = 0;
+        hr = renderManager.CreateTexture2DDX11(&descTextRT4, NULL, &Texture->getTextureDX11());
+        if (FAILED(hr))
+            return hr;
+
+        // create the rt Shader resource view
+        D3D11_SHADER_RESOURCE_VIEW_DESC descViewRT4;
+        ZeroMemory(&descViewRT4, sizeof(descViewRT4));
+        descViewRT4.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        descViewRT4.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        descViewRT4.Texture2D.MostDetailedMip = 0;
+        descViewRT4.Texture2D.MipLevels = 1;
+        hr = renderManager.CreateShaderResourceViewDX11(Texture->getTextureDX11(), &descViewRT4, &ResorceView4);
+        if (FAILED(hr))
+            return hr;
+
+        // Create the render target view
+        hr = renderManager.CreateRenderTargetViewDX11(Texture->getTextureDX11(), NULL, &RenderTargetView4->getRenderTargetViewDX11());
+        if (FAILED(hr))
+            return hr;
+            /**/

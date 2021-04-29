@@ -24,6 +24,23 @@ Mesh::~Mesh()
 	}
 }
 
+void Mesh::SetMesh()
+{
+
+}
+
+void Mesh::Update()
+{
+}
+
+void Mesh::Render()
+{
+}
+
+void Mesh::MoveMesh()
+{
+}
+
 void Mesh::setVetices(Vertex* newVertex, unsigned int vertexCount)
 {
 	VerticesSize = vertexCount;

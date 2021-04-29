@@ -1,7 +1,16 @@
 #pragma once
 #include "Matrix4.h"
 #include "Vector3.h"
+#include <string>
+#include "Material.h"
 
+#if defined(DX11)
+#include <d3d11.h>
+#include <d3dx11.h>
+#include <d3dcompiler.h>
+#include <xnamath.h>
+#elif defined(OGL)
+#endif
 
 
 struct Vec3
@@ -17,8 +26,14 @@ struct Vec2
 // vertex buffer
 struct Vertex
 {
-	 Vec3 vertex;  // vertex
-	 Vec2 uvs;  //texture uvs 
+#if defined (DX11)
+	Vec3 vertex;  // vertex
+	Vec2 uvs;  //texture uvs 
+	Vec3 normals; //normales
+#elif defined (OGL)
+	Vec3 vertex;
+	Vec2 TexCoords;
+#endif
 };
 
 
@@ -39,7 +54,15 @@ private:
 	unsigned short* indexBuffer; //index buffer
 	unsigned int indexBufferSize;
 
+	std::string fileName;
+
 public:
+
+	void SetMesh();
+	void Update();
+	void Render();
+	void MoveMesh();
+
 
 	//------------------ getters ---------------------//
 
@@ -56,7 +79,8 @@ public:
 	void setVetices(Vertex* newVertex, unsigned int vertexCount);
 	void setIndexBuffer(unsigned short* newIndexBuffer, unsigned int newIndexBufferSize);
 
-
+	void SetFileName(std::string _fileName) { fileName = _fileName; };
+	std::string getFileName() { return fileName; };
 
 
 private:

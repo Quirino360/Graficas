@@ -6,7 +6,7 @@ Camera::Camera()
 
 	//------- Up, Right, Front ----------- //
 	axisX = Vector3(0, 0, 0); // Right
-	axisY = Vector3(0, 0, 0); // Front
+	axisY = Vector3(0, 0, 0); // Front 
 	axisZ = Vector3(0, 0, 0); // Up
 
 	// ------------- View Matrix -------------- //

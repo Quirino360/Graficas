@@ -1,39 +1,86 @@
+#pragma once 
+#pragma comment(lib, "ComDlg32.lib")
+
 #include <windows.h>
 
-#include "imgui.h"
+#if defined(DX11)
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
+#elif defined(OGL)
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
+#include "imgui_impl_opengl3.h"
+#include "imgui_impl_glfw.h"
+
+
+
+#endif
+
+
+
 #include "GraphicModule.h"
 
-#include "assimp/Importer.hpp"
-#include "assimp/scene.h"
-#include "assimp/postprocess.h" //Ahorita no se usa???
+
+#include <iostream>
+#include <string>
+
+#include "imgui.h"
+
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include <assimp/matrix4x4.h>
+#include <assimp/cimport.h>
+
 
 // -----------------Global var-----------------------------------------------------------------
 HWND g_hwnd;
 GraphicsModule::test MiObj;
 
 
-/**
- * @brief   Forward declare message handler from imgui_impl_win32.cpp
- * @param   #HWND: A handle to the window.
- * @param   #UINT: The message.
- * @param   #WPARAM: Additional message information. The contents of this parameter depend on the value of the uMsg parameter.
- * @param   #LPARAM: Additional message information. The contents of this parameter depend on the value of the uMsg parameter.
- * @return  #LRESULT: The return value is the result of the message processing and depends on the message sent..
- * @bug     No know Bugs.
- * @return  #LRESULT: Status code.
- */
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam);
+#if defined(OGL)
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
-/**
- * @brief   Message bomb.
- * @param   #HWND: A handle to the window.
- * @param   #UINT: The message.
- * @param   #WPARAM: Additional message information. The contents of this parameter depend on the value of the uMsg parameter.
- * @param   #LPARAM: Additional message information. The contents of this parameter depend on the value of the uMsg parameter.
- * @return  #LRESULT: The return value is the result of the message processing and depends on the message sent..
- */
+GLfloat rotationX = 0.0f;
+GLfloat rotationY = 0.0f;
+
+#endif
+
+#if defined(DX11)
+//
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam);
+#endif
+
+
+std::string OpenFileGetName(HWND owner = NULL)
+{
+    // common dialog box structure, setting all fields to 0 is important
+    OPENFILENAME ofn = { 0 };
+    TCHAR szFile[260] = { 0 };
+
+    // Initialize remaining fields of OPENFILENAME structure
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = owner;
+    ofn.lpstrFile = szFile;
+    ofn.nMaxFile = sizeof(szFile);
+    ofn.lpstrFilter = ("All\0*.*\0Text\0*.TXT\0");
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFileTitle = NULL;
+    ofn.nMaxFileTitle = 0;
+    ofn.lpstrInitialDir = NULL;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+    if (GetOpenFileName(&ofn) == TRUE)
+    {
+        return szFile;
+    }
+    return "";
+}
+/**/
+
+#if defined(DX11)
+//
 LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
 {
 
@@ -68,6 +115,60 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
         UINT key = LOWORD(_wParam);
         switch (key)
         {
+        case 'O':
+        {
+            HRESULT hr = S_OK;
+            BUFFER_DESC_DX11 bd;
+            std::string fName = OpenFileGetName(_hwnd);
+            testOBj.aLoadModel.loadModel(fName);
+
+            
+            testOBj.mesh.setVetices(testOBj.aLoadModel.getVertexData(), testOBj.aLoadModel.numVertex);
+
+            //D3D11_BUFFER_DESC bd;
+            ZeroMemory(&bd, sizeof(bd));
+            bd.Usage = D3D11_USAGE_DEFAULT_DX11;
+            bd.ByteWidth = sizeof(Vertex) * testOBj.aLoadModel.numVertex;
+            bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+            bd.CPUAccessFlags = 0;
+            D3D11_SUBRESOURCE_DATA InitData;
+            ZeroMemory(&InitData, sizeof(InitData));
+            InitData.pSysMem = testOBj.mesh.getVertices();
+            hr = testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), &InitData, &testOBj.g_pVertexBuffer->getyBufferDX11());
+            if (FAILED(hr))
+            {
+                std::cout << "Error at CreateBufferDX11 &g_pVertexBuffer->getyBufferDX11(), in Graficos cpp" << std::endl;
+                return ::DefWindowProc(_hwnd, _msg, _wParam, _lParam);
+            }
+
+                
+
+            // Create index buffer
+            // Create vertex buffer
+            
+            testOBj.mesh.setIndexBuffer(testOBj.aLoadModel.getIndexData()->data(), testOBj.aLoadModel.numIndices);
+
+            bd.Usage = D3D11_USAGE_DEFAULT_DX11;
+            bd.ByteWidth = sizeof(unsigned short) * testOBj.aLoadModel.numIndices;
+            bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+            bd.CPUAccessFlags = 0;
+            InitData.pSysMem = testOBj.mesh.getIndexBuffer();
+            hr = testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), &InitData, &testOBj.g_pIndexBuffer->getyBufferDX11());
+            if (FAILED(hr))
+            {
+                std::cout << "Error at CreateBufferDX11 &g_pIndexBuffer->getyBufferDX11(), in Graficos cpp" << std::endl;
+                return ::DefWindowProc(_hwnd, _msg, _wParam, _lParam);
+            }
+                
+
+            break;
+        }
+        case'M':
+        {
+            testOBj.mouseMove = !testOBj.mouseMove;
+            break;
+        }
+
         case 37:    //Left key 
             testOBj.camera.move(-1, 0, 0);
             break;
@@ -113,13 +214,32 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
     return ::DefWindowProc(_hwnd, _msg, _wParam, _lParam);
 }
 
-/**
- * @brief   Set the style for the main window and init it.
- * @param   #unsigned int: First window width.
- * @param   #unsigned int: First window height.
- * @bug     No know Bugs.
- * @return  #HRESULT: Status code.
- */
+#elif defined(OGL)
+//manage inputs
+void processInput(GLFWwindow* window)
+{
+    auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
+
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
+    {
+        std::string fName = OpenFileGetName(g_hwnd);
+        testOBj.aLoadModel.loadModel(fName);
+    }
+}
+
+//manage window resize
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+#endif
+
+
+#if defined(DX11)
+//
 HRESULT InitWindow(LONG _width, LONG _height)
 {
     
@@ -155,12 +275,10 @@ HRESULT InitWindow(LONG _width, LONG _height)
 
     return S_OK;
 }
+#endif
 
-/**
- * @brief   Init the UI.
- * @bug     No know Bugs.
- * @return  #HRESULT: Status code.
- */
+
+//
 HRESULT InitImgUI()
 {
     // Setup Dear ImGui context
@@ -171,58 +289,86 @@ HRESULT InitImgUI()
     ImGui::StyleColorsDark();
 
     // Setup Platform/Renderer back ends
-    ImGui_ImplWin32_Init(g_hwnd);
 #if defined(DX11)
+    ImGui_ImplWin32_Init(g_hwnd);
     auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
-
     ImGui_ImplDX11_Init(testOBj.renderManager.getDeviceDX11(), testOBj.renderManager.getDeviceContextDX11());
-#endif
+#elif defined(OGL)
 
+
+#endif
     return S_OK;
 }
 
+
 void UIRender()
 {
+    auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
     // Start the Dear ImGui frame
+
 #if defined(DX11)
     ImGui_ImplDX11_NewFrame();
-#endif
-
     ImGui_ImplWin32_NewFrame();
+
+#elif defined(OGL)
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+#endif
     ImGui::NewFrame();
 
+#if defined(DX11)
+
     // example window
-    if (ImGui::Begin("Another Window", nullptr))
+    if (ImGui::Begin("Window", nullptr))
     {
+        static float dir[3]{};
+        if (ImGui::DragFloat3("Directional Light", dir, 0.001f, -1.0f, 1.0f))
+        {
+            
+            testOBj.m_DirLightBuffer.dir = XMFLOAT4(dir[0], dir[1], dir[2], 0.0f);
+        }
     }
+
+#elif defined(OGL)
+    ImGui::Begin("Demo window");
+    ImGui::Button("Hello!");
+
+#endif
+
     ImGui::End();
 
     // render UI
     ImGui::Render();
 #if defined(DX11)
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+#elif defined(OGL)
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 #endif
 }
+
+
 
 void Render()
 {
     auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
     testOBj.Render();
+
 #if defined(DX11) || defined(OGL)
     UIRender();
 #endif
+
 #if defined(DX11)
     testOBj.renderManager.PresentDX11(0, 0);
+#elif defined(OGL)
+    
 #endif
 }
 
-/**
- * @brief   Entry point.
- * @bug     No know Bugs.
- * @return  #int: Status code.
- */
+
+//
 int main()
 {
+#if defined(DX11)
     // create the window and console
     if (FAILED(InitWindow(1080, 720)))
     {
@@ -246,10 +392,6 @@ int main()
         ImGui::DestroyContext();
         return 0;
     }
-
-    //Just trying this shit called assimp
-    Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile("D:/Users/angel/Documents/GitHubs/Graficos1Lehi/Graficas/Tutorial07/Models/drakefire_pistol_low.obj",NULL);
 
     
     // main loop
@@ -276,5 +418,67 @@ int main()
     testOBj.CleanupDevice();
     DestroyWindow(g_hwnd);
     return (int)msg.wParam;
+#elif defined(OGL)
+
+    // glfw: initialize and configure
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+
+    auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
+
+    // glfw window creation
+    GLFWwindow* window = glfwCreateWindow(1080, 720, "LearnOpenGL", NULL, NULL);
+    if (window == NULL)
+    {
+        std::cout << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+    glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+    // glad: load all OpenGL function pointers
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return -1;
+    }
+
+    
+    testOBj.InitDevice(g_hwnd);
+
+    // render loop
+    // -----------
+    while (!glfwWindowShouldClose(window))
+    {
+        // input
+        processInput(window);
+
+        //render & update
+        testOBj.Update();
+        testOBj.Render();
+
+        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // optional: de-allocate all resources once they've outlived their purpose:
+
+
+    // glfw: terminate, clearing all previously allocated GLFW resources.
+    glfwTerminate();
+    return 0;
+#endif
 
 }
+
+    // Vertex Array Objects = VAO
+    // Vertex Buffer Objects = VAO
+    //Element Buffer Object = EBO
