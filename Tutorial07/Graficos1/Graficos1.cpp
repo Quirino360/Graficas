@@ -6,18 +6,12 @@
 #if defined(DX11)
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
-#elif defined(OGL)
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 
+#elif defined(OGL)
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_glfw.h"
 
-
-
 #endif
-
-
 
 #include "GraphicModule.h"
 
@@ -27,17 +21,15 @@
 
 #include "imgui.h"
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-#include <assimp/matrix4x4.h>
-#include <assimp/cimport.h>
 
 
 // -----------------Global var-----------------------------------------------------------------
 HWND g_hwnd;
 GraphicsModule::test MiObj;
 
+#if defined (OGL)
+GLFWwindow* OGLwindow;
+#endif 
 
 #if defined(OGL)
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -122,7 +114,7 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
             std::string fName = OpenFileGetName(_hwnd);
             testOBj.aLoadModel.loadModel(fName);
 
-            
+
             testOBj.mesh.setVetices(testOBj.aLoadModel.getVertexData(), testOBj.aLoadModel.numVertex);
 
             //D3D11_BUFFER_DESC bd;
@@ -141,11 +133,11 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
                 return ::DefWindowProc(_hwnd, _msg, _wParam, _lParam);
             }
 
-                
+
 
             // Create index buffer
             // Create vertex buffer
-            
+
             testOBj.mesh.setIndexBuffer(testOBj.aLoadModel.getIndexData()->data(), testOBj.aLoadModel.numIndices);
 
             bd.Usage = D3D11_USAGE_DEFAULT_DX11;
@@ -159,7 +151,7 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
                 std::cout << "Error at CreateBufferDX11 &g_pIndexBuffer->getyBufferDX11(), in Graficos cpp" << std::endl;
                 return ::DefWindowProc(_hwnd, _msg, _wParam, _lParam);
             }
-                
+
 
             break;
         }
@@ -199,7 +191,7 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
             {
                 testOBj.g_Projection = XMMATRIX(testOBj.camera.getMatrixOrthographic().matrix4);
             }
-            GraphicsModule::CBChangeOnResize cbChangesOnResize;
+            GraphicsModule::cbChangeOnResize cbChangesOnResize;
             cbChangesOnResize.mProjection = XMMatrixTranspose(testOBj.g_Projection);
             testOBj.renderManager.getDeviceContextDX11()->UpdateSubresource(testOBj.g_pCBChangeOnResize->getyBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
             break;
@@ -242,7 +234,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 //
 HRESULT InitWindow(LONG _width, LONG _height)
 {
-    
+
     // Register class
     WNDCLASSEX wcex;
     wcex.cbSize = sizeof(WNDCLASSEX);
@@ -294,8 +286,9 @@ HRESULT InitImgUI()
     auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
     ImGui_ImplDX11_Init(testOBj.renderManager.getDeviceDX11(), testOBj.renderManager.getDeviceContextDX11());
 #elif defined(OGL)
-
-
+    auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
+    ImGui_ImplGlfw_InitForOpenGL(OGLwindow, true);
+    ImGui_ImplOpenGL3_Init("#version 130");
 #endif
     return S_OK;
 }
@@ -318,24 +311,200 @@ void UIRender()
 
 #if defined(DX11)
 
-    // example window
-    if (ImGui::Begin("Window", nullptr))
+
+    if (ImGui::Begin("Lights", nullptr))
     {
-        static float dir[3]{};
-        if (ImGui::DragFloat3("Directional Light", dir, 0.001f, -1.0f, 1.0f))
+        if (ImGui::BeginMenu("Dir Light"))
         {
-            
-            testOBj.m_DirLightBuffer.dir = XMFLOAT4(dir[0], dir[1], dir[2], 0.0f);
+            // ------------------------------ dir light ------------------------------ //
+            static float lightDirection[3]{ -1.0f, 0.5f, -0.25f };
+            static float lightColor[3]{ 1.0f, 1.0f, 1.0f };
+
+            testOBj.m_DirLightBuffer.dir = XMFLOAT4(lightDirection[0], lightDirection[1], lightDirection[2], 0.0f);
+            testOBj.m_DirLightBuffer.lightDirColor = XMFLOAT4(lightColor[0], lightColor[1], lightColor[2], 1.0f);
+
+            if (ImGui::DragFloat3("Directional Light", lightDirection, 0.001f, -1.0f, 1.0f))
+            {
+                testOBj.m_DirLightBuffer.dir = XMFLOAT4(lightDirection[0], lightDirection[1], lightDirection[2], 0.0f);
+            }
+            if (ImGui::DragFloat3("Dir Light Color", lightColor, 0.001f, -1.0f, 1.0f))
+            {
+                testOBj.m_DirLightBuffer.lightDirColor = XMFLOAT4(lightColor[0], lightColor[1], lightColor[2], 0.0f);
+            }
+
+            ImGui::EndMenu();
         }
+
+        if (ImGui::BeginMenu("Point Light"))
+        {
+            // ------------------------------ point light ------------------------------ //
+            static float pointLightColor[3]{ 1.0f, 0.0f, 0.0f };
+            static float pointLightPos[3]{ 30.0f, 20.0f, 0.0f };
+            static float pointLightAtt = 50.0f;
+
+            testOBj.m_PointLightBuffer.pointLightColor = XMFLOAT4(pointLightColor[0], pointLightColor[1], pointLightColor[2], 1.0f);
+            testOBj.m_PointLightBuffer.pointLightPos = XMFLOAT3(pointLightPos[0], pointLightPos[1], pointLightPos[2]);
+            testOBj.m_PointLightBuffer.pointLightAtt = FLOAT(pointLightAtt);
+
+            if (ImGui::DragFloat3("Point Light Color", pointLightColor, 0.1, -1.0f, 1.0f))
+            {
+                testOBj.m_PointLightBuffer.pointLightColor = XMFLOAT4(pointLightColor[0], pointLightColor[1], pointLightColor[2], 1.0f);
+            }
+            if (ImGui::DragFloat3("Point Light Pos", pointLightPos, 0.1f))
+            {
+                testOBj.m_PointLightBuffer.pointLightPos = XMFLOAT3(pointLightPos[0], pointLightPos[1], pointLightPos[2]);
+            }
+            if (ImGui::DragFloat("Point Light Att", &pointLightAtt, 0.1f))
+            {
+                testOBj.m_PointLightBuffer.pointLightAtt = FLOAT(pointLightAtt);
+            }
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Spot Light"))
+        {
+            // ------------------------------ spotlight ------------------------------ //
+            static float spotLightColor[3]{ 0.0f, 1.0f, 0.0f };
+            static float spotLightPos[3]{ 0.0f, 250.0f, 0.0f };
+            static float spotLightDir[3]{ 0.0f, -1.0f, -0.06f };
+            static float SpotlightAtt = 800.0f;
+            static float spotLightInner = 0.2f;
+            static float spotLightOutner = 0.5f;
+            static float n = 1.0f; //this is nothing
+
+            testOBj.m_SpotLightBuffer.spotLightColor = XMFLOAT4(spotLightColor[0], spotLightColor[1], spotLightColor[2], 1.0f);
+            testOBj.m_SpotLightBuffer.spotLightPos = XMFLOAT4(spotLightPos[0], spotLightPos[1], spotLightPos[2], 1.0f);
+            testOBj.m_SpotLightBuffer.spotLightDir = XMFLOAT4(spotLightDir[0], spotLightDir[1], spotLightDir[2], 1.0f);
+            testOBj.m_SpotLightBuffer.SpotlightAtt = FLOAT(SpotlightAtt);
+            testOBj.m_SpotLightBuffer.spotLightInner = FLOAT(spotLightInner);
+            testOBj.m_SpotLightBuffer.spotLightOutner = FLOAT(spotLightOutner);
+            testOBj.m_SpotLightBuffer.n = FLOAT(n); //NOTHING
+
+            if (ImGui::DragFloat3("Point Light Color", spotLightColor, 0.001f, -1.0f, 1.0f))
+            {
+                testOBj.m_SpotLightBuffer.spotLightColor = XMFLOAT4(spotLightColor[0], spotLightColor[1], spotLightColor[2], 1.0f);
+            }            
+            if (ImGui::DragFloat3("Point Light Pos", spotLightPos, 0.001f))
+            {
+                testOBj.m_SpotLightBuffer.spotLightPos = XMFLOAT4(spotLightPos[0], spotLightPos[1], spotLightPos[2], 1.0f);
+            }            
+            if (ImGui::DragFloat3("Point Light Dir", spotLightDir, 0.001f, -1.0f, 1.0f))
+            {
+                testOBj.m_SpotLightBuffer.spotLightDir = XMFLOAT4(spotLightDir[0], spotLightDir[1], spotLightDir[2], 1.0f);
+            }
+            if (ImGui::DragFloat("Spot Light Att", &SpotlightAtt, 0.001f))
+            {
+                testOBj.m_SpotLightBuffer.SpotlightAtt = FLOAT(SpotlightAtt);
+            }
+            if (ImGui::DragFloat("Spot Light Inner", &spotLightInner, 0.001f))
+            {
+                testOBj.m_SpotLightBuffer.spotLightInner = FLOAT(spotLightInner);
+            }
+            if (ImGui::DragFloat("Spot Light Outer", &spotLightOutner, 0.001f))
+            {
+                testOBj.m_SpotLightBuffer.spotLightOutner = FLOAT(spotLightOutner);
+            }
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Ambient Light"))
+        {
+            // ------------------------------ Ambient Light ------------------------------ //
+            static float ambientColor[3]{ 1.0f, 1.0f, 1.0f };
+            static float n1[3]{ 1.0f, 1.0f, 1.0f }; //this is nothing
+            static float kAmbient = 0.5f;
+
+            testOBj.m_AmbientLightBuffer.ambientColor = XMFLOAT4(ambientColor[0], ambientColor[1], ambientColor[2], 1.0f);
+            testOBj.m_AmbientLightBuffer.kAmbient = FLOAT(kAmbient);
+
+            if (ImGui::DragFloat3("Ambient Color", ambientColor, 0.001f, -1.0f, 1.0f))
+            {
+                testOBj.m_AmbientLightBuffer.ambientColor = XMFLOAT4(ambientColor[0], ambientColor[1], ambientColor[2], 1.0f);
+            }
+            if (ImGui::DragFloat("kAmbient", &kAmbient, 0.001f, -1.0f, 1.0f))
+            {
+                testOBj.m_AmbientLightBuffer.kAmbient = FLOAT(kAmbient);
+            }
+
+            ImGui::EndMenu();
+        }
+
+        ImGui::End();
     }
 
+    if (ImGui::Begin("Mesh", nullptr))
+    {
+        // ------------------------------ Open Object ------------------------------ //
+        if (ImGui::Button("Open file", ImVec2(75, 25)))
+        {
+            HRESULT hr = S_OK;
+            BUFFER_DESC_DX11 bd;
+            std::string fName = OpenFileGetName(g_hwnd);
+            testOBj.aLoadModel.loadModel(fName);
+
+            testOBj.mesh.setVetices(testOBj.aLoadModel.getVertexData(), testOBj.aLoadModel.numVertex);
+
+            //D3D11_BUFFER_DESC bd;
+            ZeroMemory(&bd, sizeof(bd));
+            bd.Usage = D3D11_USAGE_DEFAULT_DX11;
+            bd.ByteWidth = sizeof(Vertex) * testOBj.aLoadModel.numVertex;
+            bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+            bd.CPUAccessFlags = 0;
+            D3D11_SUBRESOURCE_DATA InitData;
+            ZeroMemory(&InitData, sizeof(InitData));
+            InitData.pSysMem = testOBj.mesh.getVertices();
+            hr = testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), &InitData, &testOBj.g_pVertexBuffer->getyBufferDX11());
+            if (FAILED(hr))
+            {
+                std::cout << "Error at CreateBufferDX11 &g_pVertexBuffer->getyBufferDX11(), in Graficos cpp" << std::endl;
+                return;
+            }
+
+            testOBj.mesh.setIndexBuffer(testOBj.aLoadModel.getIndexData()->data(), testOBj.aLoadModel.numIndices);
+            bd.Usage = D3D11_USAGE_DEFAULT_DX11;
+            bd.ByteWidth = sizeof(unsigned short) * testOBj.aLoadModel.numIndices;
+            bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+            bd.CPUAccessFlags = 0;
+            InitData.pSysMem = testOBj.mesh.getIndexBuffer();
+            hr = testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), &InitData, &testOBj.g_pIndexBuffer->getyBufferDX11());
+            if (FAILED(hr))
+            {
+                std::cout << "Error at CreateBufferDX11 &g_pIndexBuffer->getyBufferDX11(), in Graficos cpp" << std::endl;
+                return;
+            }
+        }
+
+        // ------------------------------ Object Transform ------------------------------/
+        static float position[3]{ 0.0, 0.0, 0.0f };
+        static float rotation[3]{ 0.0f, 0, 0.0f };
+        static float scale[3]{ 1.0f, 1.0f, 1.0f };
+
+        testOBj.mesh.position = Vector3(position[0], position[1], position[2]);
+        testOBj.mesh.rotation = Vector3(rotation[0], rotation[1], rotation[2]);
+        testOBj.mesh.scale = Vector3(scale[0], scale[1], scale[2]);
+
+        if (ImGui::DragFloat3("Position", position, 0.1f))
+        {
+            testOBj.mesh.position = Vector3(position[0], position[1], position[2]);
+        }
+        if (ImGui::DragFloat3("Rotation", rotation, 0.1f))
+        {
+            testOBj.mesh.rotation = Vector3(rotation[0], rotation[1], rotation[2]);
+        }
+        if (ImGui::DragFloat3("Scale", scale, 0.1f))
+        {
+            testOBj.mesh.scale = Vector3(scale[0], scale[1], scale[2]);
+        }
+        ImGui::End();
+    }
+
+
 #elif defined(OGL)
-    ImGui::Begin("Demo window");
-    ImGui::Button("Hello!");
+ImGui::Begin("Demo window");
+ImGui::Button("Hello!");
+ImGui::End();
 
 #endif
-
-    ImGui::End();
 
     // render UI
     ImGui::Render();
@@ -344,6 +513,11 @@ void UIRender()
 #elif defined(OGL)
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 #endif
+
+
+
+
+
 }
 
 
@@ -393,7 +567,7 @@ int main()
         return 0;
     }
 
-    
+
     // main loop
     MSG msg = { 0 };
     while (WM_QUIT != msg.message)
@@ -430,18 +604,17 @@ int main()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
 
     // glfw window creation
-    GLFWwindow* window = glfwCreateWindow(1080, 720, "LearnOpenGL", NULL, NULL);
-    if (window == NULL)
+    OGLwindow = glfwCreateWindow(1080, 720, "LearnOpenGL", NULL, NULL);
+    if (OGLwindow == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
     }
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwMakeContextCurrent(OGLwindow);
+    glfwSetFramebufferSizeCallback(OGLwindow, framebuffer_size_callback);
 
     // glad: load all OpenGL function pointers
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -450,27 +623,34 @@ int main()
         return -1;
     }
 
-    
-    testOBj.InitDevice(g_hwnd);
+
+    if (FAILED(InitImgUI()))
+    {
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        
+        ImGui::DestroyContext();
+        return 0;
+    }
+
+    auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
 
     // render loop
     // -----------
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(OGLwindow))
     {
         // input
-        processInput(window);
+        processInput(OGLwindow);
 
-        //render & update
         testOBj.Update();
-        testOBj.Render();
+
+        // render
+        Render();
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(OGLwindow);
         glfwPollEvents();
     }
-
-    // optional: de-allocate all resources once they've outlived their purpose:
-
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     glfwTerminate();
@@ -479,6 +659,6 @@ int main()
 
 }
 
-    // Vertex Array Objects = VAO
-    // Vertex Buffer Objects = VAO
-    //Element Buffer Object = EBO
+// Vertex Array Objects = VAO
+// Vertex Buffer Objects = VAO
+//Element Buffer Object = EBO

@@ -1,5 +1,6 @@
 #include "RenderManager.h"
-
+//#include <vector>
+#include <vector>
 RenderManager::RenderManager()
 {
 }
@@ -41,14 +42,14 @@ HRESULT RenderManager::CreateShaderResourceViewDX11(ID3D11Resource* _pResource, 
 	return DeviceDX11->CreateShaderResourceView(_pResource, _pDesc, _ppSRView);
 }
 
-HRESULT RenderManager::CreateVertexShaderDX11(const void* _pShaderBytecode, SIZE_T _BytecodeLength, ID3D11ClassLinkage* _pClassLinkage, ID3D11VertexShader** _ppVertexShader)
-{
-	return DeviceDX11->CreateVertexShader(_pShaderBytecode, _BytecodeLength, _pClassLinkage, _ppVertexShader);
-}
-
 HRESULT RenderManager::CreateInputLayoutDX11(const D3D11_INPUT_ELEMENT_DESC* _pInputElementDescs, UINT _NumElements, const void* _pShaderBytecodeWithInputSignature, SIZE_T _BytecodeLength, ID3D11InputLayout** _ppInputLayout)
 {
 	return DeviceDX11->CreateInputLayout(_pInputElementDescs, _NumElements, _pShaderBytecodeWithInputSignature, _BytecodeLength, _ppInputLayout);
+}
+
+HRESULT RenderManager::CreateVertexShaderDX11(const void* _pShaderBytecode, SIZE_T _BytecodeLength, ID3D11ClassLinkage* _pClassLinkage, ID3D11VertexShader** _ppVertexShader)
+{
+	return DeviceDX11->CreateVertexShader(_pShaderBytecode, _BytecodeLength, _pClassLinkage, _ppVertexShader);
 }
 
 HRESULT RenderManager::CreatePixelShaderDX11(const void* _pShaderBytecode, SIZE_T _BytecodeLength, ID3D11ClassLinkage* _pClassLinkage, ID3D11PixelShader** _ppPixelShader)
@@ -164,9 +165,6 @@ void RenderManager::DrawIndexedDX11(UINT _IndexCount, UINT _StartIndexLocation, 
 
 
 
-
-
-
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
 //--------------------------------------------------------------------------------- Eswap Chain -----------------------------------------------------------------------------------------------------------------------------------------------------------------//
 //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------//
@@ -179,5 +177,75 @@ HRESULT RenderManager::GetBufferDX11(UINT _Buffer, REFIID _riid, void** _ppSurfa
 HRESULT RenderManager::PresentDX11(UINT SyncInterval, UINT Flags)
 {
 	return SwapChainDX11->Present(SyncInterval, Flags);
+}
+
+
+
+
+HRESULT RenderManager::CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* pShaderBlob, ID3D11InputLayout*& pInputLayout)
+{
+	// Reflect shader info
+	ID3D11ShaderReflection* pVertexShaderReflection = NULL;
+	if (FAILED(D3DReflect(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&pVertexShaderReflection)))
+	{
+		return S_FALSE;
+	}
+
+	// Get shader info
+	D3D11_SHADER_DESC shaderDesc;
+	pVertexShaderReflection->GetDesc(&shaderDesc);
+
+	// Read input layout description from shader info
+	std::vector<D3D11_INPUT_ELEMENT_DESC> inputLayoutDesc;
+	for (int i = 0; i < shaderDesc.InputParameters; i++)
+	{
+		D3D11_SIGNATURE_PARAMETER_DESC paramDesc;
+		pVertexShaderReflection->GetInputParameterDesc(i, &paramDesc);
+
+		// fill out input element desc
+		D3D11_INPUT_ELEMENT_DESC elementDesc;
+		elementDesc.SemanticName = paramDesc.SemanticName;
+		elementDesc.SemanticIndex = paramDesc.SemanticIndex;
+		elementDesc.InputSlot = 0;
+		elementDesc.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+		elementDesc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+		elementDesc.InstanceDataStepRate = 0;
+
+		// determine DXGI format
+		if (paramDesc.Mask == 1)
+		{
+			if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) elementDesc.Format = DXGI_FORMAT_R32_UINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) elementDesc.Format = DXGI_FORMAT_R32_SINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) elementDesc.Format = DXGI_FORMAT_R32_FLOAT;
+		}
+		else if (paramDesc.Mask <= 3)
+		{
+			if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) elementDesc.Format = DXGI_FORMAT_R32G32_UINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) elementDesc.Format = DXGI_FORMAT_R32G32_SINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) elementDesc.Format = DXGI_FORMAT_R32G32_FLOAT;
+		}
+		else if (paramDesc.Mask <= 7)
+		{
+			if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) elementDesc.Format = DXGI_FORMAT_R32G32B32_UINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) elementDesc.Format = DXGI_FORMAT_R32G32B32_SINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) elementDesc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+		}
+		else if (paramDesc.Mask <= 15)
+		{
+			if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_UINT32) elementDesc.Format = DXGI_FORMAT_R32G32B32A32_UINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_SINT32) elementDesc.Format = DXGI_FORMAT_R32G32B32A32_SINT;
+			else if (paramDesc.ComponentType == D3D_REGISTER_COMPONENT_FLOAT32) elementDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+		}
+
+		//save element desc
+		inputLayoutDesc.push_back(elementDesc);
+	}
+
+	// Try to create Input Layout
+	HRESULT hr = CreateInputLayoutDX11(reinterpret_cast<const D3D11_INPUT_ELEMENT_DESC*>(&inputLayoutDesc[0]), inputLayoutDesc.size(), pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), &pInputLayout);
+
+	//Free allocation shader reflection memory
+	pVertexShaderReflection->Release();
+	return hr;
 }
 #endif

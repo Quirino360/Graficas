@@ -29,17 +29,48 @@ void Mesh::SetMesh()
 
 }
 
-void Mesh::Update()
+void Mesh::Init()
 {
+#if defined (DX11)
+	g_World = XMMatrixIdentity();
+#endif
 }
 
-void Mesh::Render()
+#if defined (DX11)
+
+void Mesh::Update(RenderManager& _rManager, Buffer*& _pCBChangesEveryFrame)
 {
+#if defined (DX11)
+
+	_rManager.UpdateSubresourceDX11(_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
+
+	// Modify the color
+	g_vMeshColor.x = 0.75;
+	g_vMeshColor.y = 0.75;
+	g_vMeshColor.z = 0.75;
+
+	//modify mesh in world
+	g_World = XMMatrixTranslation(position.getX(), position.getY(), position.getZ());
+	g_World *= XMMatrixRotationRollPitchYaw(rotation.getX(), rotation.getY(), rotation.getZ());
+	g_World *= XMMatrixScaling(scale.getX(), scale.getY(), scale.getZ());
+	cb.mWorld = XMMatrixTranspose(g_World);
+	cb.vMeshColor = g_vMeshColor;
+#endif
 }
 
-void Mesh::MoveMesh()
+void Mesh::Render(RenderManager& _rManager, RenderTargetView*& _targetView, ID3D11ShaderResourceView*& _resourceView, DepthStencilView*& _dStencilView, unsigned int _textureSlot )
 {
+	float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f }; // red, green, blue, alpha
+
+	// ----------------------------------------------- Print an object ---------------------------------------------------------//
+	_rManager.ClearRenderTargetViewDX11(_targetView->getRenderTargetViewDX11(), ClearColor);
+	_rManager.ClearDepthStencilViewDX11(_dStencilView->getyDepthStencilViewDX11(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	//_rManager.OMSetRenderTargetsDX11(1, &_targetView->getRenderTargetViewDX11(), _dStencilView->getyDepthStencilViewDX11());
+	_rManager.PSSetShaderResourcesDX11(_textureSlot, 1, &_resourceView);
+
+
 }
+#endif
 
 void Mesh::setVetices(Vertex* newVertex, unsigned int vertexCount)
 {
