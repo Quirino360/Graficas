@@ -32,7 +32,7 @@ public:
 
     AssimpLoadModel();
     ~AssimpLoadModel();
-   
+
     Assimp::Importer importer;
     const aiScene* modelScene;
     const aiNode* modelNode;

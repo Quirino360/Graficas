@@ -28,8 +28,8 @@ public:
 	HRESULT CreateTexture2DDX11(const D3D11_TEXTURE2D_DESC* _pDesc, const D3D11_SUBRESOURCE_DATA* _pInitialData, ID3D11Texture2D** _ppTexture2D);
 	HRESULT CreateDepthStencilViewDX11(ID3D11Resource* _pResource, const D3D11_DEPTH_STENCIL_VIEW_DESC* _pDesc, ID3D11DepthStencilView** _ppDepthStencilView);
     HRESULT CreateShaderResourceViewDX11(ID3D11Resource* _pResource, const D3D11_SHADER_RESOURCE_VIEW_DESC* _pDesc, ID3D11ShaderResourceView** _ppSRView);
-	HRESULT CreateInputLayoutDX11(const D3D11_INPUT_ELEMENT_DESC* _pInputElementDescs, UINT _NumElements, const void* _pShaderBytecodeWithInputSignature, SIZE_T _BytecodeLength, ID3D11InputLayout** _ppInputLayout);
 	HRESULT CreateVertexShaderDX11(const void* _pShaderBytecode, SIZE_T _BytecodeLength, ID3D11ClassLinkage* _pClassLinkage, ID3D11VertexShader** _ppVertexShader);
+	HRESULT CreateInputLayoutDX11(const D3D11_INPUT_ELEMENT_DESC* _pInputElementDescs, UINT _NumElements, const void* _pShaderBytecodeWithInputSignature, SIZE_T _BytecodeLength, ID3D11InputLayout** _ppInputLayout);
 	HRESULT CreatePixelShaderDX11(const void* _pShaderBytecode, SIZE_T _BytecodeLength, ID3D11ClassLinkage* _pClassLinkage, ID3D11PixelShader** _ppPixelShader);
 	HRESULT CreateBufferDX11(const D3D11_BUFFER_DESC* _pDesc, const D3D11_SUBRESOURCE_DATA* _pInitialData, ID3D11Buffer** _ppBuffer);
 	HRESULT CreateSamplerStateDX11(const D3D11_SAMPLER_DESC* _pSamplerDesc, ID3D11SamplerState** _ppSamplerState);
@@ -54,13 +54,9 @@ public:
     void PSSetShaderResourcesDX11(UINT _StartSlot, UINT _NumViews, ID3D11ShaderResourceView* const* _ppShaderResourceViews);
     void PSSetSamplersDX11(UINT _StartSlot, UINT _NumSamplers, ID3D11SamplerState** _ppSamplers);
     void DrawIndexedDX11(UINT _IndexCount, UINT _StartIndexLocation, INT  _BaseVertexLocation);
-
     // -------------------------- EswapChain ------------------------ //
     HRESULT GetBufferDX11(UINT _Buffer, REFIID _riid, void** _ppSurface);
     HRESULT PresentDX11(UINT SyncInterval, UINT Flags);
-
-    // -------------------------- EswapChain ------------------------ //
-    HRESULT CreateInputLayoutDescFromVertexShaderSignature(ID3DBlob* pShaderBlob, ID3D11InputLayout*& pInputLayout);
 
     // Relese
     void ReleaseDX11();

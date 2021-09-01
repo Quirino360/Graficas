@@ -5,6 +5,7 @@
 #include "Vector3.h"
 #include "Material.h"
 
+<<<<<<< HEAD
 #include "RenderManager.h"
 #include "RenderTargetView.h"
 #include "DepthStencilView.h"
@@ -17,6 +18,8 @@
 #include <assimp/matrix4x4.h>
 #include <assimp/cimport.h>
 
+=======
+>>>>>>> parent of 89f9bc6 (Parcial 1)
 #if defined(DX11)
 #include <d3d11.h>
 #include <d3dx11.h>
@@ -46,6 +49,7 @@ struct Vec2
 	float x, y;
 };
 
+<<<<<<< HEAD
 
 #define POSITION_LOCATION    0
 #define TEX_COORD_LOCATION   1
@@ -64,15 +68,15 @@ enum VB_TYPES
 };
 
 // vertex buffer // ESTE ES EL INPUT DEL BUFFER
+=======
+// vertex buffer
+>>>>>>> parent of 89f9bc6 (Parcial 1)
 struct Vertex
 {
 #if defined (DX11)
 	Vec3 vertex;  // vertex
-	Vec3 normals; //normales
 	Vec2 uvs;  //texture uvs 
-	Vec3 binormal;
-	Vec3 tangent;
-
+	Vec3 normals; //normales
 #elif defined (OGL)
 	Vec3 vertex;
 	Vec2 TexCoords;
@@ -80,6 +84,7 @@ struct Vertex
 #endif
 };
 
+<<<<<<< HEAD
 struct BoneInfo
 {
 	aiMatrix4x4 BoneOffset;
@@ -110,6 +115,9 @@ struct VertexLight
 	Vec3 position;
 	Vec2 texCoord;
 };
+=======
+
+>>>>>>> parent of 89f9bc6 (Parcial 1)
 
 class Mesh
 {
@@ -117,6 +125,7 @@ public:
 	Mesh();
 	~Mesh();
 
+<<<<<<< HEAD
 #if defined(DX11)
 	CBChangesEveryFrame cb;
 
@@ -136,6 +145,12 @@ public:
 
 
 private:
+=======
+private:
+
+	//Matrix4* worldMatrix;
+
+>>>>>>> parent of 89f9bc6 (Parcial 1)
 	Vertex* Vertices;
 	VertexLight* vertexLight;
 	unsigned int VerticesSize;
@@ -147,6 +162,7 @@ private:
 	std::string fileName;
 
 public:
+<<<<<<< HEAD
 	
 	void Init();
 	// -------------------- Bones 
@@ -157,6 +173,14 @@ public:
 #elif defined (OGL)
 
 #endif
+=======
+
+	void SetMesh();
+	void Update();
+	void Render();
+	void MoveMesh();
+
+>>>>>>> parent of 89f9bc6 (Parcial 1)
 
 	//------------------ getters ---------------------//
 	Vertex* getVertices() { return Vertices; };
@@ -167,6 +191,11 @@ public:
 	unsigned int getIndexBufferSize() { return indexBufferSize; };
 
 	//------------------ =setters ---------------------//
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> parent of 89f9bc6 (Parcial 1)
 	void setVetices(Vertex* newVertex, unsigned int vertexCount);
 	void setVertexLight(VertexLight* newVertex, unsigned int vertexCount);
 	void setIndexBuffer(unsigned short* newIndexBuffer, unsigned int newIndexBufferSize);
@@ -174,7 +203,11 @@ public:
 	void SetFileName(std::string _fileName) { fileName = _fileName; };
 	std::string getFileName() { return fileName; };
 
+
 private:
+
+
+
 
 };
 

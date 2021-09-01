@@ -69,6 +69,7 @@
     <ClInclude Include="include\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+<<<<<<< HEAD
     <ClInclude Include="include\TechniqueS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -81,6 +82,8 @@
     <ClInclude Include="include\Buffers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+=======
+>>>>>>> parent of 89f9bc6 (Parcial 1)
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\test.cpp">
@@ -126,15 +129,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\EffectS.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\PassS.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\TechniqueS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

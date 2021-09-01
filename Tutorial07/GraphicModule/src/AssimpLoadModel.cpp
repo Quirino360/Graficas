@@ -57,17 +57,6 @@ void AssimpLoadModel::assimpGetMeshData(aiMesh* _aiMesh)
                 vertexLight[j].texCoord.x = 0;
                 vertexLight[j].texCoord.y = 0;
             }
-
-            vertices[j].tangent.x = _aiMesh->mTangents[j].x;
-            vertices[j].tangent.y = _aiMesh->mTangents[j].y;
-            vertices[j].tangent.z = _aiMesh->mTangents[j].z;
-
-            vertices[j].binormal.x = _aiMesh->mBitangents[j].x;
-            vertices[j].binormal.y = _aiMesh->mBitangents[j].y;
-            vertices[j].binormal.z = _aiMesh->mBitangents[j].z;
-
-
-
             //std::cout << "x = " << _aiMesh->mVertices[j].x << ", y = " << _aiMesh->mVertices[j].y << ", z = " << _aiMesh->mVertices[j].z << ", u = " << _aiMesh->mTextureCoords[0][j].x << ", v = " << _aiMesh->mTextureCoords[0][j].y << std::endl;
         }
 
@@ -123,6 +112,7 @@ void AssimpLoadModel::assimpGetMeshData(aiMesh* _aiMesh)
 bool AssimpLoadModel::loadModel(std::string file)
 {
     modelScene = importer.ReadFile(file, aiProcess_MakeLeftHanded | aiProcess_FlipWindingOrder | aiProcess_FlipUVs | aiProcess_PreTransformVertices |
+<<<<<<< HEAD
         aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals | aiProcess_Triangulate | aiProcess_FixInfacingNormals |
         aiProcess_FindInvalidData | aiProcess_ValidateDataStructure | aiProcess_JoinIdenticalVertices | 0 );
     /*
@@ -145,6 +135,14 @@ bool AssimpLoadModel::loadModel(std::string file)
         processData();
     }
     else
+=======
+        aiProcess_CalcTangentSpace |     aiProcess_GenSmoothNormals |    aiProcess_Triangulate | aiProcess_FixInfacingNormals |
+        aiProcess_FindInvalidData |  aiProcess_ValidateDataStructure | 0
+
+    );
+
+    if (!modelScene)
+>>>>>>> parent of 89f9bc6 (Parcial 1)
     {
 
 #if defined (DX11)

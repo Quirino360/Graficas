@@ -2,17 +2,11 @@
 #include <windows.h>
 #include "AssimpLoadModel.h"
 
-
-#if defined(OGL) || defined(DX11)
-#include <FreeImage.h>
-#endif
-
 #if defined(DX11)
 #include <d3d11.h>
 #include <d3dx11.h>
 #include <d3dcompiler.h>
 #include <xnamath.h>
-
 
 #elif defined(OGL)
 #include <glad/glad.h>
@@ -23,8 +17,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #endif
 
-#include "EffectS.h"
-#include "Camera.h"
+#include"Camera.h"
 #include "Mesh.h"
 #include "Buffer.h"
 #include "Texture2D.h"
@@ -32,31 +25,76 @@
 #include "RenderTargetView.h"
 #include "DepthStencilView.h"
 #include "Shader.h"
+<<<<<<< HEAD
 #include "Buffers.h"
+=======
+
+#if defined(OGL) || defined(DX11)
+#include <FreeImage.h>
+#endif
+>>>>>>> parent of 89f9bc6 (Parcial 1)
 
 namespace GraphicsModule
 {
+    
 
     struct VIEWPORT
     {
 #if defined(DX11)
-        FLOAT TopLeftX;
-        FLOAT TopLeftY;
-        FLOAT Width;
-        FLOAT Height;
-        FLOAT MinDepth;
-        FLOAT MaxDepth;
+        float TopLeftX;
+        float TopLeftY;
+        float Width;
+        float Height;
+        float MinDepth;
+        float MaxDepth;
 #endif
     };
 
+<<<<<<< HEAD
+=======
+    struct SimpleVertex
+    {
+#if defined(DX11)
+        XMFLOAT3 Pos;
+        XMFLOAT2 Tex;
+        XMFLOAT3 Normal;
+#endif
+    };
+
+    struct DirLight
+    {
+#if defined(DX11)
+        XMFLOAT4 dir;
+#endif
+    };
+
+    struct CBNeverChanges
+    {
+#if defined(DX11)
+        XMMATRIX mView;
+#endif
+    };
+
+    struct CBChangeOnResize
+    {
+#if defined(DX11)
+        XMMATRIX mProjection;
+#endif
+    };
+
+    struct CBChangesEveryFrame
+    {
+#if defined(DX11)
+        XMMATRIX mWorld;
+        XMFLOAT4 vMeshColor;
+#endif
+    };
+
+>>>>>>> parent of 89f9bc6 (Parcial 1)
     class test
     {
     public:
 #if defined(DX11)
-        
-        EffectS m_effect;
-        Shader shader;
-
         D3D_DRIVER_TYPE                     g_driverType = D3D_DRIVER_TYPE_NULL;
         D3D_FEATURE_LEVEL                   g_featureLevel = D3D_FEATURE_LEVEL_11_0;
 
@@ -65,13 +103,20 @@ namespace GraphicsModule
         IDXGISwapChain* g_pSwapChain = NULL;
         RenderManager renderManager;
 
-        DepthStencilView* g_pDepthStencilView = NULL;
 
+<<<<<<< HEAD
         float t = 0;
 
+=======
 
-        ID3D11RasterizerState* g_Rasterizer = NULL;
+        DepthStencilView* g_pDepthStencilView = NULL;
+>>>>>>> parent of 89f9bc6 (Parcial 1)
 
+        ID3D11VertexShader* g_pVertexShader = NULL;
+        ID3D11PixelShader* g_pPixelShader = NULL;
+        ID3D11InputLayout* g_pVertexLayout = NULL;
+
+<<<<<<< HEAD
         // ---------------------------------   Buffers   --------------------------------- //
         Buffer* g_pVertexBuffer = nullptr; 
         Buffer* g_pIndexBuffer = nullptr; 
@@ -106,7 +151,35 @@ namespace GraphicsModule
 
         Buffer* g_DiffuseBuffer = nullptr; // b10
         Diffuse m_DiffuseBuffer;
+=======
+        Buffer* g_pVertexBuffer = nullptr; //
+        Buffer* g_pIndexBuffer = nullptr; //
+        Buffer* g_pCBNeverChanges = nullptr; //
+        Buffer* g_pCBChangeOnResize = nullptr; //
+        Buffer* g_pCBChangesEveryFrame = nullptr; //
 
+
+
+        ID3D11SamplerState* g_pSamplerLinear = NULL;
+        XMMATRIX                            g_World;
+        XMMATRIX                            g_View;
+        XMMATRIX                            g_Projection;
+        XMFLOAT4                            g_vMeshColor;
+
+        Buffer* g_pVertexBuffer2 = nullptr; //
+        Buffer* g_pIndexBuffer2 = nullptr; //
+
+        ID3D11VertexShader* g_pVertexShader2 = NULL;
+        ID3D11PixelShader* g_pPixelShader2 = NULL;
+        ID3D11RasterizerState* g_Rasterizer = NULL;
+        ID3D11RasterizerState* g_Rasterizer2 = NULL;
+        ID3D11InputLayout* g_pVertexLayout2 = NULL;
+
+>>>>>>> parent of 89f9bc6 (Parcial 1)
+
+        //---------------------------------      ---------------------------------//
+        Buffer* g_DirLightBuffer = nullptr; //directional light
+        DirLight m_DirLightBuffer;
 
         // --------------------------------- Textures --------------------------------- //
         //ID3D11ShaderResourceView* ShaderResourceView = NULL;
@@ -133,30 +206,39 @@ namespace GraphicsModule
         LPPOINT                             newCursor = new POINT();
         LPPOINT                             oldCursor = new POINT();
 
+<<<<<<< HEAD
+=======
+        // -------------------------------------------------------- Inlcuion de texturas ---------------------------------------------------- //
+        Texture2D* Texture = nullptr; //
+
+        ID3D11ShaderResourceView* ShaderResourceView = NULL;
+        ID3D11ShaderResourceView* ResorceView1 = NULL;
+        RenderTargetView* RenderTargetView1 = NULL;
 
 
+        //ID3D11ShaderResourceView* ResorceView2 = NULL;
+        //RenderTargetView* RenderTargetView2 = NULL;
+>>>>>>> parent of 89f9bc6 (Parcial 1)
+
+        //ID3D11ShaderResourceView* ResorceView3 = NULL;
+        //RenderTargetView* RenderTargetView3 = NULL;
+
+        //ID3D11ShaderResourceView* ResorceView4 = NULL;
+        //RenderTargetView* RenderTargetView4 = NULL;
 #elif defined(OGL)
     public:
         AssimpLoadModel aLoadModel;
-
-        unsigned int vertexShader;
-        unsigned int fragmentShader;
-        unsigned int shaderProgram;
-
-        unsigned int VAO;
-        unsigned int VBO;
-
         Shader ourShader;
+
+        unsigned int VBO, VAO;
 
         unsigned int texture;
         unsigned int texture2;
-
-    private:
-    public:
-    private:
 #endif
 
     public:
+
+
         HRESULT InitDevice(HWND _hwnd);
 
         void Update();
@@ -168,11 +250,11 @@ namespace GraphicsModule
 
 #if defined(DX11)
     public:
-        //HRESULT CompileShaderFromFile(const char* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
+        HRESULT CompileShaderFromFile(const char* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
         void InitVariables();
 #endif
     };
 
-    extern test& GetTestObj(HWND _hwnd = NULL);
+    extern test& GetTestObj(HWND _hwnd);
 
 }
