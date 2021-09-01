@@ -8,13 +8,6 @@ Mesh::Mesh()
 
 	indexBuffer = nullptr; //index buffer
 	indexBufferSize = 0;
-
-
-	NumIndices = 0;
-	BaseVertex = 0;
-	BaseIndex = 0;
-	MaterialIndex = 0xFFFFFFFF;
-
 }
 
 Mesh::~Mesh()
@@ -31,22 +24,22 @@ Mesh::~Mesh()
 	}
 }
 
-<<<<<<< HEAD
-void Mesh::Init()
-=======
 void Mesh::SetMesh()
 {
 
 }
 
-void Mesh::Update()
->>>>>>> parent of 89f9bc6 (Parcial 1)
+void Mesh::Init()
 {
+#if defined (DX11)
+	g_World = XMMatrixIdentity();
+#endif
 }
 
-void Mesh::Render()
+#if defined (DX11)
+
+void Mesh::Update(RenderManager& _rManager, Buffer*& _pCBChangesEveryFrame)
 {
-<<<<<<< HEAD
 #if defined (DX11)
 
 	_rManager.UpdateSubresourceDX11(_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
@@ -61,23 +54,23 @@ void Mesh::Render()
 	g_World *= XMMatrixRotationRollPitchYaw(rotation.getX(), rotation.getY(), rotation.getZ());
 	g_World *= XMMatrixScaling(scale.getX(), scale.getY(), scale.getZ());
 	cb.mWorld = XMMatrixTranspose(g_World);
-	//cb.vMeshColor = g_vMeshColor;
+	cb.vMeshColor = g_vMeshColor;
 #endif
-=======
->>>>>>> parent of 89f9bc6 (Parcial 1)
 }
 
-void Mesh::MoveMesh()
+void Mesh::Render(RenderManager& _rManager, RenderTargetView*& _targetView, ID3D11ShaderResourceView*& _resourceView, DepthStencilView*& _dStencilView, unsigned int _textureSlot )
 {
+	float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f }; // red, green, blue, alpha
+
+	// ----------------------------------------------- Print an object ---------------------------------------------------------//
+	_rManager.ClearRenderTargetViewDX11(_targetView->getRenderTargetViewDX11(), ClearColor);
+	_rManager.ClearDepthStencilViewDX11(_dStencilView->getyDepthStencilViewDX11(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	//_rManager.OMSetRenderTargetsDX11(1, &_targetView->getRenderTargetViewDX11(), _dStencilView->getyDepthStencilViewDX11());
+	_rManager.PSSetShaderResourcesDX11(_textureSlot, 1, &_resourceView);
+
+
 }
-<<<<<<< HEAD
-
-#elif defined (OGL)
 #endif
-=======
->>>>>>> parent of 89f9bc6 (Parcial 1)
-
-
 
 void Mesh::setVetices(Vertex* newVertex, unsigned int vertexCount)
 {
@@ -92,21 +85,6 @@ void Mesh::setVetices(Vertex* newVertex, unsigned int vertexCount)
 	}*/
 	
 	memcpy(Vertices, newVertex, sizeof(Vertex) * VerticesSize);
-}
-
-void Mesh::setVertexLight(VertexLight* newVertex, unsigned int vertexCount)
-{
-	VerticesSize = vertexCount;
-	
-	if (nullptr == vertexLight) {
-		vertexLight = new VertexLight[VerticesSize];
-	}
-	/*else {
-		delete[] indexBuffer;
-		vertexLight = new VertexLight[VerticesSize];
-	}*/
-
-	memcpy(vertexLight, newVertex, sizeof(VertexLight) * VerticesSize);
 }
 
 void Mesh::setIndexBuffer(unsigned short* newIndexBuffer, unsigned int newIndexBufferSize)

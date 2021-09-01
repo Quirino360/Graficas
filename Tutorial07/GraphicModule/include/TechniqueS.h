@@ -52,7 +52,5 @@ namespace GraphicsModule
 		std::vector<PassS> passes;
 		std::vector<std::string> defines;
 	};
-	/*
-	los shaders deben tener una lista de objetos que van a dibujar
-	*/
+
 }
