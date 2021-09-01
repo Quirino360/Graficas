@@ -32,7 +32,7 @@
 #include "RenderTargetView.h"
 #include "DepthStencilView.h"
 #include "Shader.h"
-
+#include "Buffers.h"
 
 namespace GraphicsModule
 {
@@ -46,87 +46,6 @@ namespace GraphicsModule
         FLOAT Height;
         FLOAT MinDepth;
         FLOAT MaxDepth;
-#endif
-    };
-
-    // -------------------- Buffers --------------------//
-    struct cbNeverChanges // b0
-    {
-#if defined(DX11)
-        XMMATRIX mView;
-#endif
-    };
-
-    struct cbChangeOnResize // b1
-    {
-#if defined(DX11)
-        XMMATRIX mProjection;
-#endif
-    };
-
-    // cbChangesEveryFrame b2 (it in a class I dont Remember, i think mesh)
-
-    struct DirLight // b3
-    {
-#if defined(DX11)
-        XMFLOAT4 dir;
-        XMFLOAT4 lightDirColor;
-#endif
-    };
-
-    struct PointLight // b4
-    {
-#if defined(DX11)
-        XMFLOAT4 pointLightColor;
-        XMFLOAT3 pointLightPos;
-        FLOAT  pointLightAtt;
-#endif
-    };
-
-    struct spotLight // b5
-    {
-#if defined(DX11)
-        XMFLOAT4 spotLightColor;
-        XMFLOAT4 spotLightPos;
-        XMFLOAT4 spotLightDir;
-        FLOAT  SpotlightAtt;
-        FLOAT  spotLightInner;
-        FLOAT  spotLightOutner;
-        FLOAT  n;
-#endif
-    };
-
-    struct Ambient // b6
-    {
-#if defined(DX11)
-        XMFLOAT4 ambientColor;
-        XMFLOAT3 n1;
-        FLOAT kAmbient;
-#endif
-    };
-
-    struct Specular // b7
-    {
-#if defined(DX11)
-        XMFLOAT3 n2;
-        FLOAT kSpecular;
-#endif
-    };
-
- //#if defined(PHONG) || defined(BLINN_PHONG)
-    struct Shinies // b8
-    {
-#if defined(DX11)
-        XMFLOAT3 n3;
-        FLOAT shininess;
-#endif
-    };
-
-    struct Diffuse // b9
-    {
-#if defined(DX11)
-        XMFLOAT3 n4;
-        FLOAT kDiffuse;
 #endif
     };
 
@@ -149,47 +68,61 @@ namespace GraphicsModule
         DepthStencilView* g_pDepthStencilView = NULL;
 
         float t = 0;
-        ID3D11SamplerState* g_pSamplerLinear = NULL;  //s0
-        ID3D11SamplerState* sampnormalMap = NULL;  //s1
-        ID3D11SamplerState* samplerSpecular = NULL;  //s2
 
-        XMMATRIX                            g_View;
-        XMMATRIX                            g_Projection;
 
         ID3D11RasterizerState* g_Rasterizer = NULL;
 
-        //---------------------------------   Buffers   ---------------------------------//
-        Buffer* g_pVertexBuffer = nullptr; //
-        Buffer* g_pIndexBuffer = nullptr; //
+        // ---------------------------------   Buffers   --------------------------------- //
+        Buffer* g_pVertexBuffer = nullptr; 
+        Buffer* g_pIndexBuffer = nullptr; 
 
         Buffer* g_pCBNeverChanges = nullptr; // b0
+        XMMATRIX g_View;
 
         Buffer* g_pCBChangeOnResize = nullptr; // b1
         cbChangeOnResize cbChangesOnResize;
 
         Buffer* g_pCBChangesEveryFrame = nullptr; // b2
+        XMMATRIX g_Projection;
 
-        //---------------------------------  Light Buffers    ---------------------------------//
-        Buffer* g_DirLightBuffer = nullptr; // b3
+        // ---------------------------------  Light Buffers    --------------------------------- //
+        Buffer* g_DirLightBuffer = nullptr; // b4
         DirLight m_DirLightBuffer;
 
-        Buffer* g_PointLightBuffer = nullptr; // b4
+        Buffer* g_PointLightBuffer = nullptr; // b5
         PointLight m_PointLightBuffer;
 
-        Buffer* g_SpotLightBuffer = nullptr; // b5
+        Buffer* g_SpotLightBuffer = nullptr; // b6
         spotLight m_SpotLightBuffer;
 
-        Buffer* g_AmbientLightBuffer = nullptr; // b6
+        Buffer* g_AmbientLightBuffer = nullptr; // b7
         Ambient m_AmbientLightBuffer;
 
-        Buffer* g_SpecularBuffer = nullptr; // b7
+        Buffer* g_SpecularBuffer = nullptr; // b8
         Specular m_SpecularBuffer;
 
-        Buffer* g_ShiniesBuffer = nullptr; // b8
+        Buffer* g_ShiniesBuffer = nullptr; // b9
         Shinies m_ShiniesBuffer;
 
-        Buffer* g_DiffuseBuffer = nullptr; // b9
+        Buffer* g_DiffuseBuffer = nullptr; // b10
         Diffuse m_DiffuseBuffer;
+
+
+        // --------------------------------- Textures --------------------------------- //
+        //ID3D11ShaderResourceView* ShaderResourceView = NULL;
+        Texture2D* Texture = nullptr; //
+
+        ID3D11ShaderResourceView* ResourceViewAlbedo = NULL; //t0
+        ID3D11ShaderResourceView* ResourceViewNormal = NULL; //t2
+        ID3D11ShaderResourceView* ResourceViewSpecular = NULL; //t3
+        ID3D11ShaderResourceView* ResourceViewPosition = NULL; //t4
+
+        ID3D11SamplerState* g_pSamplerLinear = NULL;  //s0
+        ID3D11SamplerState* sampnormalMap = NULL;  //s1
+        ID3D11SamplerState* samplerSpecular = NULL;  //s2
+
+        RenderTargetView* RenderTargetV = NULL;
+
 
 
         AssimpLoadModel aLoadModel;
@@ -200,15 +133,6 @@ namespace GraphicsModule
         LPPOINT                             newCursor = new POINT();
         LPPOINT                             oldCursor = new POINT();
 
-        // -------------------------------------------------------- Inlcuion de texturas ---------------------------------------------------- //
-        //ID3D11ShaderResourceView* ShaderResourceView = NULL;
-        Texture2D* Texture = nullptr; //
-
-        ID3D11ShaderResourceView* ResourceViewAlbedo = NULL; //t0
-        ID3D11ShaderResourceView* ResourceViewNormal = NULL; //t1 
-        ID3D11ShaderResourceView* ResourceViewSpecular = NULL; //t2
-
-        RenderTargetView* RenderTargetV = NULL;
 
 
 #elif defined(OGL)

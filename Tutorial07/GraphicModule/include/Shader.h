@@ -10,9 +10,9 @@
 
 
 #elif defined(OGL)
-#include <glad/glad.h> 
-
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
 #include <glm/glm.hpp>
 #endif
 
@@ -25,43 +25,47 @@ namespace GraphicsModule
 {
     class Shader
     {
+    public:
+        Shader() = default;
+        Shader(const char* vertexPath, const char* fragmentPath);
+
+        HWND g_hwnd; 
+        unsigned int ID;
 
 #if defined(DX11)
-    public:
-
-        HWND g_hwnd;
-
-        HRESULT CompileShaderFromFile(const char* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
-        HRESULT CompileCreateShadersFromString(const char* _vertexString, const char* _pixelString);
-
         ID3D11VertexShader* g_pVertexShader = NULL;
         ID3D11PixelShader* g_pPixelShader = NULL;
         ID3D11InputLayout* g_pVertexLayout = NULL;
 
-
 #elif defined (OGL)
-
-    public:
-        // constructor reads and builds the shader
-        Shader() = default;
-        Shader(const char* vertexPath, const char* fragmentPath);
-
-        // the program ID
-        unsigned int ID;
+#endif
+    //-----------------------
     private:
 
-    public:
 
-        void CreateShader(const char* vertexPath, const char* fragmentPath);
+
+    //-----------------------
+    public:
+        HRESULT CompileCreateShadersFromString(const char* _vertexString, const char* _pixelString);
+
+#if defined (DX11)
+        HRESULT CompileShaderFromFile(const char* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
+
+#elif defined (OGL)
         // use/activate the shader
         void use();
-
-
         // utility uniform functions
         void setBool(const std::string& name, bool value) const;
         void setInt(const std::string& name, int value) const;
         void setFloat(const std::string& name, float value) const;
+#endif
+    public:
+        void CreateShader(const char* vertexPath, const char* fragmentPath);
 
+
+
+#if defined (DX11)
+#elif defined (OGL)
         void setVec2(const std::string& name, const glm::vec2& value) const { glUniform2fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]); }
         void setVec2(const std::string& name, float x, float y) const { glUniform2f(glGetUniformLocation(ID, name.c_str()), x, y); }
         // ------------------------------------------------------------------------

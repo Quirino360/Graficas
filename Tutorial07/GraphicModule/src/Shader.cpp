@@ -3,6 +3,7 @@
 
 namespace GraphicsModule
 {
+
 #if defined (DX11)
 
     HRESULT Shader::CompileShaderFromFile(const char* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
@@ -34,9 +35,12 @@ namespace GraphicsModule
 
         return S_OK;
     }
+#elif defined(OGL)
+#endif
 
     HRESULT Shader::CompileCreateShadersFromString(const char* _vertexString, const char* _pixelString)
     {
+#if defined (DX11)
         auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
         HRESULT hr = S_OK;
 
@@ -44,7 +48,7 @@ namespace GraphicsModule
         ID3DBlob* pVSErrorBlob;
 
         //Compile Vertex Shader with a string
-        hr = D3DCompile(_vertexString, strlen(_vertexString), NULL, NULL, NULL, "VS", "vs_4_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, &pVSBlob, &pVSErrorBlob);
+        hr = D3DCompile(_vertexString, strlen(_vertexString), NULL, NULL, NULL, "vs_main", "vs_4_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, &pVSBlob, &pVSErrorBlob);
         if (FAILED(hr))
         {
             if (pVSErrorBlob != NULL)
@@ -67,7 +71,7 @@ namespace GraphicsModule
         ID3DBlob* pPSErrorBlob;
 
         //Compile Pixel Shader with a string
-        hr = D3DCompile(_pixelString, strlen(_pixelString), NULL, NULL, NULL, "PS", "ps_4_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, &pPSBlob, &pPSErrorBlob);
+        hr = D3DCompile(_pixelString, strlen(_pixelString), NULL, NULL, NULL, "ps_main", "ps_4_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, &pPSBlob, &pPSErrorBlob);
         if (FAILED(hr))
         {
             if (pPSErrorBlob != NULL)
@@ -96,14 +100,21 @@ namespace GraphicsModule
         if (pPSErrorBlob) pPSBlob->Release();
 
         return hr;
+#elif defined (OGL)
+        return S_OK;
+        //return S_FALSE;
+#endif
+
     }
 
     //Create Vertex Shader from a string
     
 
-#elif defined (OGL)
+
     Shader::Shader(const char* vertexPath, const char* fragmentPath)
     {
+#if defined(DX11)
+#elif defined(OGL)
         // 1. retrieve the vertex/fragment source code from filePath
         std::string vertexCode;
         std::string fragmentCode;
@@ -155,10 +166,13 @@ namespace GraphicsModule
         // delete the shaders as they're linked into our program now and no longer necessary
         glDeleteShader(vertex);
         glDeleteShader(fragment);
+#endif
     }
 
     void Shader::CreateShader(const char* vertexPath, const char* fragmentPath)
     {
+#if defined(DX11)
+#elif defined(OGL)
         // 1. retrieve the vertex/fragment source code from filePath
         std::string vertexCode;
         std::string fragmentCode;
@@ -210,11 +224,16 @@ namespace GraphicsModule
         // delete the shaders as they're linked into our program now and no longer necessary
         glDeleteShader(vertex);
         glDeleteShader(fragment);
+#endif
     }
 
+#if defined(DX11)
+#elif defined(OGL)
     void Shader::use()
     {
+
         glUseProgram(ID);
+
     }
 
     void Shader::setBool(const std::string& name, bool value) const

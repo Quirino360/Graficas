@@ -8,6 +8,13 @@ Mesh::Mesh()
 
 	indexBuffer = nullptr; //index buffer
 	indexBufferSize = 0;
+
+
+	NumIndices = 0;
+	BaseVertex = 0;
+	BaseIndex = 0;
+	MaterialIndex = 0xFFFFFFFF;
+
 }
 
 Mesh::~Mesh()
@@ -22,11 +29,6 @@ Mesh::~Mesh()
 		delete[] indexBuffer;
 		indexBuffer = nullptr;
 	}
-}
-
-void Mesh::SetMesh()
-{
-
 }
 
 void Mesh::Init()
@@ -54,7 +56,7 @@ void Mesh::Update(RenderManager& _rManager, Buffer*& _pCBChangesEveryFrame)
 	g_World *= XMMatrixRotationRollPitchYaw(rotation.getX(), rotation.getY(), rotation.getZ());
 	g_World *= XMMatrixScaling(scale.getX(), scale.getY(), scale.getZ());
 	cb.mWorld = XMMatrixTranspose(g_World);
-	cb.vMeshColor = g_vMeshColor;
+	//cb.vMeshColor = g_vMeshColor;
 #endif
 }
 
@@ -70,7 +72,11 @@ void Mesh::Render(RenderManager& _rManager, RenderTargetView*& _targetView, ID3D
 
 
 }
+
+#elif defined (OGL)
 #endif
+
+
 
 void Mesh::setVetices(Vertex* newVertex, unsigned int vertexCount)
 {
@@ -85,6 +91,21 @@ void Mesh::setVetices(Vertex* newVertex, unsigned int vertexCount)
 	}*/
 	
 	memcpy(Vertices, newVertex, sizeof(Vertex) * VerticesSize);
+}
+
+void Mesh::setVertexLight(VertexLight* newVertex, unsigned int vertexCount)
+{
+	VerticesSize = vertexCount;
+	
+	if (nullptr == vertexLight) {
+		vertexLight = new VertexLight[VerticesSize];
+	}
+	/*else {
+		delete[] indexBuffer;
+		vertexLight = new VertexLight[VerticesSize];
+	}*/
+
+	memcpy(vertexLight, newVertex, sizeof(VertexLight) * VerticesSize);
 }
 
 void Mesh::setIndexBuffer(unsigned short* newIndexBuffer, unsigned int newIndexBufferSize)

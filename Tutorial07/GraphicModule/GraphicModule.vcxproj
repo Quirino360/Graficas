@@ -545,6 +545,7 @@
   <ItemGroup>
     <ClInclude Include="include\AssimpLoadModel.h" />
     <ClInclude Include="include\Buffer.h" />
+    <ClInclude Include="include\Buffers.h" />
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\DepthStencilView.h" />
     <ClInclude Include="include\Device.h" />

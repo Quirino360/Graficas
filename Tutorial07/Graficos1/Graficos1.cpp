@@ -14,7 +14,7 @@
 #endif
 
 #include "GraphicModule.h"
-
+#include "Buffers.h"
 
 #include <iostream>
 #include <string>
@@ -116,6 +116,7 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
 
 
             testOBj.mesh.setVetices(testOBj.aLoadModel.getVertexData(), testOBj.aLoadModel.numVertex);
+            //testOBj.mesh.setVertexLight(testOBj.aLoadModel.getVertexLightData(), testOBj.aLoadModel.numVertex);
 
             //D3D11_BUFFER_DESC bd;
             ZeroMemory(&bd, sizeof(bd));
@@ -126,6 +127,7 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
             D3D11_SUBRESOURCE_DATA InitData;
             ZeroMemory(&InitData, sizeof(InitData));
             InitData.pSysMem = testOBj.mesh.getVertices();
+            //InitData.pSysMem = testOBj.mesh.getVertexLight();
             hr = testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), &InitData, &testOBj.g_pVertexBuffer->getyBufferDX11());
             if (FAILED(hr))
             {
@@ -191,7 +193,8 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
             {
                 testOBj.g_Projection = XMMATRIX(testOBj.camera.getMatrixOrthographic().matrix4);
             }
-            GraphicsModule::cbChangeOnResize cbChangesOnResize;
+
+            cbChangeOnResize cbChangesOnResize;
             cbChangesOnResize.mProjection = XMMatrixTranspose(testOBj.g_Projection);
             testOBj.renderManager.getDeviceContextDX11()->UpdateSubresource(testOBj.g_pCBChangeOnResize->getyBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
             break;

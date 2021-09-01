@@ -25,6 +25,7 @@
 #define ALL_TEXTURE_MAPS ( TEXTURE_MAP_NORMAL | TEXTURE_MAP_SPECULAR)
 
 
+
 namespace GraphicsModule
 {
 	enum class NORMAL_TECHNIQUES
@@ -68,5 +69,11 @@ namespace GraphicsModule
 	private:
 
 		std::vector<TechniqueS> vTechniques;
+
+		const char* LightVertex = "DX11Shaders/Deferred/LightVertex.fx";
+		const char* LightPixel = "DX11Shaders/Deferred/LightPixel.fx";
+
+		const char* GBufferVertex = "DX11Shaders/Deferred/GBufferVertex.fx";
+		const char* GBufferPixel = "DX11Shaders/Deferred/GBufferPixel.fx";
 	};
 }

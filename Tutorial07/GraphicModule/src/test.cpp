@@ -142,6 +142,8 @@ namespace GraphicsModule
         if (FAILED(hr))
             return hr;
 
+
+
         /*// and the resource view for the shader
         D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
         ZeroMemory(&srvDesc, sizeof(srvDesc));
@@ -152,7 +154,7 @@ namespace GraphicsModule
         if (FAILED(hr))
             return hr;*/
 
-        renderManager.OMSetRenderTargetsDX11(1, &RenderTargetV->getRenderTargetViewDX11(), g_pDepthStencilView->getyDepthStencilViewDX11());
+        renderManager.OMSetRenderTargetsDX11(4, &RenderTargetV->getRenderTargetViewDX11(), g_pDepthStencilView->getyDepthStencilViewDX11());
 
         //Set the viewport
         VIEWPORT vp;
@@ -200,43 +202,43 @@ namespace GraphicsModule
         if (FAILED(hr))
             return hr;
 
-        // Create dir light buffer (b3)
+        // Create dir light buffer (b4)
         bd.ByteWidth = sizeof(DirLight);
         hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_DirLightBuffer->getyBufferDX11());
         if (FAILED(hr))
             return hr;
 
-        // Create point light buffer (b4)
+        // Create point light buffer (b5)
         bd.ByteWidth = sizeof(PointLight);
         hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_PointLightBuffer->getyBufferDX11());
         if (FAILED(hr))
             return hr;
 
-        // Create spot light buffer (b5)
+        // Create spot light buffer (b6)
         bd.ByteWidth = sizeof(spotLight);
         hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_SpotLightBuffer->getyBufferDX11());
         if (FAILED(hr))
             return hr;
 
-        // Create ambient light buffer (b6)
+        // Create ambient light buffer (b7)
         bd.ByteWidth = sizeof(Ambient);
         hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_AmbientLightBuffer->getyBufferDX11());
         if (FAILED(hr))
             return hr;
 
-        // Create Specular buffer (b7)
+        // Create Specular buffer (b8)
         bd.ByteWidth = sizeof(Specular);
         hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_SpecularBuffer->getyBufferDX11());
         if (FAILED(hr))
             return hr;
 
-        // Create Shinies buffer (b8)
+        // Create Shinies buffer (b9)
         bd.ByteWidth = sizeof(Shinies);
         hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_ShiniesBuffer->getyBufferDX11());
         if (FAILED(hr))
             return hr;
 
-        // Create Diffuse buffer (b9)
+        // Create Diffuse buffer (b10)
         bd.ByteWidth = sizeof(Diffuse);
         hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_DiffuseBuffer->getyBufferDX11());
         if (FAILED(hr))
@@ -249,12 +251,12 @@ namespace GraphicsModule
             return hr;
 
         textureString = "ZResorces//meshes//Gun//Textures//base_normal.jpg";
-        hr = D3DX11CreateShaderResourceViewFromFile(renderManager.getDeviceDX11(), textureString.c_str(), NULL, NULL, &ResourceViewNormal, NULL); // t1
+        hr = D3DX11CreateShaderResourceViewFromFile(renderManager.getDeviceDX11(), textureString.c_str(), NULL, NULL, &ResourceViewNormal, NULL); // t2
         if (FAILED(hr))
             return hr;
 
-        textureString = "ZResorces//meshes//Gun//Textures//base_AO.jpg";
-        hr = D3DX11CreateShaderResourceViewFromFile(renderManager.getDeviceDX11(), textureString.c_str(), NULL, NULL, &ResourceViewSpecular, NULL); // t2
+        textureString = "ZResorces//meshes//Gun//Textures//base_metallic.jpg";
+        hr = D3DX11CreateShaderResourceViewFromFile(renderManager.getDeviceDX11(), textureString.c_str(), NULL, NULL, &ResourceViewSpecular, NULL); // t3
         if (FAILED(hr))
             return hr;
 
@@ -338,7 +340,7 @@ namespace GraphicsModule
 
 
 #elif defined(OGL)
-
+    // -------------------- Shaders -------------------- //
 // configure global opengl state
     glEnable(GL_DEPTH_TEST);
 
@@ -349,9 +351,15 @@ namespace GraphicsModule
 
     //std::string fName = OpenFileGetName(g_hwnd);
     //testOBj.aLoadModel.loadModel(fName);
-    aLoadModel.loadModel("ZResorces/meshes/Gun/drakefire_pistol_low.obj");
-    // set up vertex data (and buffer(s)) and configure vertex attributes
 
+    if (nullptr == aLoadModel.indices)
+    {
+        //aLoadModel.loadModel("ZResorces/meshes/Gun/drakefire_pistol_low.obj");
+        aLoadModel.loadModel("ZResorces/meshes/Guard/boblampclean.md5mesh");
+    }
+
+    // -------------------- Mesh -------------------- //
+    // set up vertex data (and buffer(s)) and configure vertex attributes
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
@@ -373,6 +381,8 @@ namespace GraphicsModule
 
     glBindVertexArray(0);
 
+
+    // -------------------- Texture -------------------- //
     // load and create a texture 
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
@@ -390,16 +400,22 @@ namespace GraphicsModule
     BYTE* bits(0); //pointer to the image data
 
     //check the file signature and deduce its format
-    fif = FreeImage_GetFileType("Ahegao2k.jpg", 0);
+    //fif = FreeImage_GetFileType("Ahegao2k.jpg", 0);
+    fif = FreeImage_GetFileType("ZResorces/meshes/Guard/Textures/guard1_face.tga");
+
     if (fif == FIF_UNKNOWN)
-        fif = FreeImage_GetFIFFromFilename("Ahegao2k.jpg");
+    {
+        //fif = FreeImage_GetFIFFromFilename("Ahegao2k.jpg");
+        fif = FreeImage_GetFIFFromFilename("ZResorces/meshes/Guard/Textures/guard1_face.tga");
+    }
     if (fif == FIF_UNKNOWN)
         return S_FALSE;
 
     //check that the plugin has reading capabilities and load the file
     if (FreeImage_FIFSupportsReading(fif))
     {
-        dib = FreeImage_Load(fif, "Ahegao2k.jpg");
+        //dib = FreeImage_Load(fif, "Ahegao2k.jpg");
+        dib = FreeImage_Load(fif, "ZResorces/meshes/Guard/Textures/guard1_face.tga");
         dib = FreeImage_ConvertTo32Bits(dib);
     }
     if (!dib)
@@ -430,7 +446,7 @@ namespace GraphicsModule
     glGenerateMipmap(GL_TEXTURE_2D);
 
     FreeImage_Unload(dib);
-
+    
     // load and create a texture 2
     glGenTextures(1, &texture2);
     glBindTexture(GL_TEXTURE_2D, texture2); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
@@ -575,13 +591,16 @@ namespace GraphicsModule
         glm::mat4 model = glm::mat4(1.0f); //initialize matrix to identity matrix first
         glm::mat4 view = glm::mat4(1.0f);
         glm::mat4 projection = glm::mat4(1.0f);
-        model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        //model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
+        model = glm::rotate(model, 180.0f, glm::vec3(0.0f, 180.0f, 0.0f));
+        //model = glm::translate(model, glm::vec3(0.0f, 0.0f, -3.0f));
+        view = glm::translate(view, glm::vec3(0.0f, -30.0f, -100.0f));
         projection = glm::perspective(glm::radians(45.0f), (float)1080 / (float)720, 0.1f, 100.0f);
 
         // retrieve the matrix uniform locations
         unsigned int modelLoc = glGetUniformLocation(ourShader.ID, "model");
         unsigned int viewLoc = glGetUniformLocation(ourShader.ID, "view");
+
 
         // pass them to the shaders (3 different ways)
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -607,8 +626,8 @@ namespace GraphicsModule
         renderManager.OMSetRenderTargetsDX11(1, &RenderTargetV->getRenderTargetViewDX11(), g_pDepthStencilView->getyDepthStencilViewDX11());
 
         renderManager.PSSetShaderResourcesDX11(0, 1, &ResourceViewAlbedo); // t0
-        renderManager.PSSetShaderResourcesDX11(1, 1, &ResourceViewNormal); // t1
-        renderManager.PSSetShaderResourcesDX11(2, 1, &ResourceViewSpecular); // t2
+        renderManager.PSSetShaderResourcesDX11(2, 1, &ResourceViewNormal); // t2
+        renderManager.PSSetShaderResourcesDX11(1, 1, &ResourceViewSpecular); // t3
         /**/
         
         //renderManager.IASetInputLayoutDX11(shader.g_pVertexLayout);
@@ -619,37 +638,28 @@ namespace GraphicsModule
         renderManager.IASetIndexBufferDX11(g_pIndexBuffer->getyBufferDX11(), DXGI_FORMAT_R16_UINT, 0);//
 
         // -------------------- Vertex shader -------------------- //
-        //renderManager.VSSetShaderDX11(shader.g_pVertexShader, NULL, 0); //vertex shader
         renderManager.VSSetShaderDX11(m_effect.GetShader().g_pVertexShader, NULL, 0); //vertex shader
         renderManager.VSSetConstantBuffersDX11(0, 1, &g_pCBNeverChanges->getyBufferDX11());
         renderManager.VSSetConstantBuffersDX11(1, 1, &g_pCBChangeOnResize->getyBufferDX11());
         renderManager.VSSetConstantBuffersDX11(2, 1, &g_pCBChangesEveryFrame->getyBufferDX11());
-        renderManager.VSSetConstantBuffersDX11(3, 1, &g_DirLightBuffer->getyBufferDX11()); // vsset dir light
-        renderManager.VSSetConstantBuffersDX11(4, 1, &g_PointLightBuffer->getyBufferDX11()); // vsset point light
-        renderManager.VSSetConstantBuffersDX11(5, 1, &g_SpotLightBuffer->getyBufferDX11()); // vsset spot light
-        renderManager.VSSetConstantBuffersDX11(6, 1, &g_AmbientLightBuffer->getyBufferDX11()); // vsset ambient light
-        renderManager.VSSetConstantBuffersDX11(7, 1, &g_SpecularBuffer->getyBufferDX11()); // vsset specular
-        renderManager.VSSetConstantBuffersDX11(8, 1, &g_ShiniesBuffer->getyBufferDX11()); // vsset shinines
-        renderManager.VSSetConstantBuffersDX11(9, 1, &g_DiffuseBuffer->getyBufferDX11()); // vsset diffuse
 
 
         // -------------------- Pixel shader -------------------- //
-        //renderManager.PSSetShaderDX11(shader.g_pPixelShader, NULL, 0); //pixel shader
         renderManager.PSSetShaderDX11(m_effect.GetShader().g_pPixelShader, NULL, 0); //pixel shader
-        renderManager.PSSetConstantBuffersDX11(0, 1, &g_pCBNeverChanges->getyBufferDX11());
+        /*renderManager.PSSetConstantBuffersDX11(0, 1, &g_pCBNeverChanges->getyBufferDX11());
         renderManager.PSSetConstantBuffersDX11(1, 1, &g_pCBChangeOnResize->getyBufferDX11());
         renderManager.PSSetConstantBuffersDX11(2, 1, &g_pCBChangesEveryFrame->getyBufferDX11());
-        renderManager.PSSetConstantBuffersDX11(3, 1, &g_DirLightBuffer->getyBufferDX11()); //vsset dirlight
-        renderManager.PSSetConstantBuffersDX11(4, 1, &g_PointLightBuffer->getyBufferDX11()); // vsset point light
-        renderManager.PSSetConstantBuffersDX11(5, 1, &g_SpotLightBuffer->getyBufferDX11()); // vsset spot light
-        renderManager.PSSetConstantBuffersDX11(6, 1, &g_AmbientLightBuffer->getyBufferDX11()); // vsset ambient light
-        renderManager.PSSetConstantBuffersDX11(7, 1, &g_SpecularBuffer->getyBufferDX11()); // vsset specular
-        renderManager.PSSetConstantBuffersDX11(8, 1, &g_ShiniesBuffer->getyBufferDX11()); // vsset shinines
-        renderManager.PSSetConstantBuffersDX11(9, 1, &g_DiffuseBuffer->getyBufferDX11()); // vsset diffuse
+        renderManager.PSSetConstantBuffersDX11(4, 1, &g_DirLightBuffer->getyBufferDX11()); //vsset dirlight
+        renderManager.PSSetConstantBuffersDX11(5, 1, &g_PointLightBuffer->getyBufferDX11()); // vsset point light
+        renderManager.PSSetConstantBuffersDX11(6, 1, &g_SpotLightBuffer->getyBufferDX11()); // vsset spot light
+        renderManager.PSSetConstantBuffersDX11(7, 1, &g_AmbientLightBuffer->getyBufferDX11()); // vsset ambient light
+        renderManager.PSSetConstantBuffersDX11(8, 1, &g_SpecularBuffer->getyBufferDX11()); // vsset specular
+        renderManager.PSSetConstantBuffersDX11(9, 1, &g_ShiniesBuffer->getyBufferDX11()); // vsset shinines
+        renderManager.PSSetConstantBuffersDX11(10, 1, &g_DiffuseBuffer->getyBufferDX11()); // vsset diffuse/**/
 
         renderManager.PSSetSamplersDX11(0, 1, &g_pSamplerLinear); // s0
-        renderManager.PSSetSamplersDX11(1, 1, &sampnormalMap); // s1
-        renderManager.PSSetSamplersDX11(2, 1, &samplerSpecular); // s2 /**/
+        renderManager.PSSetSamplersDX11(2, 1, &sampnormalMap); // s2
+        renderManager.PSSetSamplersDX11(3, 1, &samplerSpecular); // s3 /**/
 
 
 
@@ -657,8 +667,9 @@ namespace GraphicsModule
 
 #elif defined(OGL)
         // render box
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, aLoadModel.numVertex);
+        aLoadModel.Render();
+        /*glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, aLoadModel.numVertex);/**/
 #endif
     }
 
