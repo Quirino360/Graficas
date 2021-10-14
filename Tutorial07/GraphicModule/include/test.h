@@ -136,7 +136,6 @@ namespace GraphicsModule
 #if defined(DX11)
         
         EffectS m_effect;
-        Shader shader;
 
         D3D_DRIVER_TYPE                     g_driverType = D3D_DRIVER_TYPE_NULL;
         D3D_FEATURE_LEVEL                   g_featureLevel = D3D_FEATURE_LEVEL_11_0;

@@ -109,50 +109,6 @@ LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
         {
         case 'O':
         {
-            HRESULT hr = S_OK;
-            BUFFER_DESC_DX11 bd;
-            std::string fName = OpenFileGetName(_hwnd);
-            testOBj.aLoadModel.loadModel(fName);
-
-
-            testOBj.mesh.setVetices(testOBj.aLoadModel.getVertexData(), testOBj.aLoadModel.numVertex);
-
-            //D3D11_BUFFER_DESC bd;
-            ZeroMemory(&bd, sizeof(bd));
-            bd.Usage = D3D11_USAGE_DEFAULT_DX11;
-            bd.ByteWidth = sizeof(Vertex) * testOBj.aLoadModel.numVertex;
-            bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-            bd.CPUAccessFlags = 0;
-            D3D11_SUBRESOURCE_DATA InitData;
-            ZeroMemory(&InitData, sizeof(InitData));
-            InitData.pSysMem = testOBj.mesh.getVertices();
-            hr = testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), &InitData, &testOBj.g_pVertexBuffer->getyBufferDX11());
-            if (FAILED(hr))
-            {
-                std::cout << "Error at CreateBufferDX11 &g_pVertexBuffer->getyBufferDX11(), in Graficos cpp" << std::endl;
-                return ::DefWindowProc(_hwnd, _msg, _wParam, _lParam);
-            }
-
-
-
-            // Create index buffer
-            // Create vertex buffer
-
-            testOBj.mesh.setIndexBuffer(testOBj.aLoadModel.getIndexData()->data(), testOBj.aLoadModel.numIndices);
-
-            bd.Usage = D3D11_USAGE_DEFAULT_DX11;
-            bd.ByteWidth = sizeof(unsigned short) * testOBj.aLoadModel.numIndices;
-            bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-            bd.CPUAccessFlags = 0;
-            InitData.pSysMem = testOBj.mesh.getIndexBuffer();
-            hr = testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), &InitData, &testOBj.g_pIndexBuffer->getyBufferDX11());
-            if (FAILED(hr))
-            {
-                std::cout << "Error at CreateBufferDX11 &g_pIndexBuffer->getyBufferDX11(), in Graficos cpp" << std::endl;
-                return ::DefWindowProc(_hwnd, _msg, _wParam, _lParam);
-            }
-
-
             break;
         }
         case'M':
@@ -312,125 +268,62 @@ void UIRender()
 #if defined(DX11)
 
 
-    if (ImGui::Begin("Lights", nullptr))
+    if (ImGui::Begin("WorkSpace", nullptr))
     {
-        if (ImGui::BeginMenu("Dir Light"))
-        {
-            // ------------------------------ dir light ------------------------------ //
-            static float lightDirection[3]{ -1.0f, 0.5f, -0.25f };
-            static float lightColor[3]{ 1.0f, 1.0f, 1.0f };
+		if (ImGui::Button("Create Default Effect", ImVec2(175, 25)))
+		{
+			HRESULT hr = S_OK;
+			BUFFER_DESC_DX11 bd;
+			testOBj.aLoadModel.loadModel("ZResorces/meshes/Sphere/sphere.obj");
 
-            testOBj.m_DirLightBuffer.dir = XMFLOAT4(lightDirection[0], lightDirection[1], lightDirection[2], 0.0f);
-            testOBj.m_DirLightBuffer.lightDirColor = XMFLOAT4(lightColor[0], lightColor[1], lightColor[2], 1.0f);
+			testOBj.mesh.setVetices(testOBj.aLoadModel.getVertexData(), testOBj.aLoadModel.numVertex);
 
-            if (ImGui::DragFloat3("Directional Light", lightDirection, 0.001f, -1.0f, 1.0f))
-            {
-                testOBj.m_DirLightBuffer.dir = XMFLOAT4(lightDirection[0], lightDirection[1], lightDirection[2], 0.0f);
-            }
-            if (ImGui::DragFloat3("Dir Light Color", lightColor, 0.001f, -1.0f, 1.0f))
-            {
-                testOBj.m_DirLightBuffer.lightDirColor = XMFLOAT4(lightColor[0], lightColor[1], lightColor[2], 0.0f);
-            }
+			//D3D11_BUFFER_DESC bd;
+			ZeroMemory(&bd, sizeof(bd));
+			bd.Usage = D3D11_USAGE_DEFAULT_DX11;
+			bd.ByteWidth = sizeof(Vertex) * testOBj.aLoadModel.numVertex;
+			bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+			bd.CPUAccessFlags = 0;
+			D3D11_SUBRESOURCE_DATA InitData;
+			ZeroMemory(&InitData, sizeof(InitData));
+			InitData.pSysMem = testOBj.mesh.getVertices();
+			hr = testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), &InitData, &testOBj.g_pVertexBuffer->getyBufferDX11());
+			if (FAILED(hr))
+			{
+				std::cout << "Error at CreateBufferDX11 &g_pVertexBuffer->getyBufferDX11(), in Graficos cpp" << std::endl;
+				return;
+			}
 
-            ImGui::EndMenu();
-        }
+			testOBj.mesh.setIndexBuffer(testOBj.aLoadModel.getIndexData()->data(), testOBj.aLoadModel.numIndices);
+			bd.Usage = D3D11_USAGE_DEFAULT_DX11;
+			bd.ByteWidth = sizeof(unsigned short) * testOBj.aLoadModel.numIndices;
+			bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+			bd.CPUAccessFlags = 0;
+			InitData.pSysMem = testOBj.mesh.getIndexBuffer();
+			hr = testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), &InitData, &testOBj.g_pIndexBuffer->getyBufferDX11());
+			if (FAILED(hr))
+			{
+				std::cout << "Error at CreateBufferDX11 &g_pIndexBuffer->getyBufferDX11(), in Graficos cpp" << std::endl;
+				return;
+			}
 
-        if (ImGui::BeginMenu("Point Light"))
-        {
-            // ------------------------------ point light ------------------------------ //
-            static float pointLightColor[3]{ 1.0f, 0.0f, 0.0f };
-            static float pointLightPos[3]{ 30.0f, 20.0f, 0.0f };
-            static float pointLightAtt = 50.0f;
 
-            testOBj.m_PointLightBuffer.pointLightColor = XMFLOAT4(pointLightColor[0], pointLightColor[1], pointLightColor[2], 1.0f);
-            testOBj.m_PointLightBuffer.pointLightPos = XMFLOAT3(pointLightPos[0], pointLightPos[1], pointLightPos[2]);
-            testOBj.m_PointLightBuffer.pointLightAtt = FLOAT(pointLightAtt);
+		}
 
-            if (ImGui::DragFloat3("Point Light Color", pointLightColor, 0.1, -1.0f, 1.0f))
-            {
-                testOBj.m_PointLightBuffer.pointLightColor = XMFLOAT4(pointLightColor[0], pointLightColor[1], pointLightColor[2], 1.0f);
-            }
-            if (ImGui::DragFloat3("Point Light Pos", pointLightPos, 0.1f))
-            {
-                testOBj.m_PointLightBuffer.pointLightPos = XMFLOAT3(pointLightPos[0], pointLightPos[1], pointLightPos[2]);
-            }
-            if (ImGui::DragFloat("Point Light Att", &pointLightAtt, 0.1f))
-            {
-                testOBj.m_PointLightBuffer.pointLightAtt = FLOAT(pointLightAtt);
-            }
-            ImGui::EndMenu();
-        }
+		if (ImGui::BeginCombo("","Effect Work Space"))
+		{
 
-        if (ImGui::BeginMenu("Spot Light"))
-        {
-            // ------------------------------ spotlight ------------------------------ //
-            static float spotLightColor[3]{ 0.0f, 1.0f, 0.0f };
-            static float spotLightPos[3]{ 0.0f, 250.0f, 0.0f };
-            static float spotLightDir[3]{ 0.0f, -1.0f, -0.06f };
-            static float SpotlightAtt = 800.0f;
-            static float spotLightInner = 0.2f;
-            static float spotLightOutner = 0.5f;
-            static float n = 1.0f; //this is nothing
+            ImGui::EndCombo();
+		}
 
-            testOBj.m_SpotLightBuffer.spotLightColor = XMFLOAT4(spotLightColor[0], spotLightColor[1], spotLightColor[2], 1.0f);
-            testOBj.m_SpotLightBuffer.spotLightPos = XMFLOAT4(spotLightPos[0], spotLightPos[1], spotLightPos[2], 1.0f);
-            testOBj.m_SpotLightBuffer.spotLightDir = XMFLOAT4(spotLightDir[0], spotLightDir[1], spotLightDir[2], 1.0f);
-            testOBj.m_SpotLightBuffer.SpotlightAtt = FLOAT(SpotlightAtt);
-            testOBj.m_SpotLightBuffer.spotLightInner = FLOAT(spotLightInner);
-            testOBj.m_SpotLightBuffer.spotLightOutner = FLOAT(spotLightOutner);
-            testOBj.m_SpotLightBuffer.n = FLOAT(n); //NOTHING
-
-            if (ImGui::DragFloat3("Point Light Color", spotLightColor, 0.001f, -1.0f, 1.0f))
-            {
-                testOBj.m_SpotLightBuffer.spotLightColor = XMFLOAT4(spotLightColor[0], spotLightColor[1], spotLightColor[2], 1.0f);
-            }            
-            if (ImGui::DragFloat3("Point Light Pos", spotLightPos, 0.001f))
-            {
-                testOBj.m_SpotLightBuffer.spotLightPos = XMFLOAT4(spotLightPos[0], spotLightPos[1], spotLightPos[2], 1.0f);
-            }            
-            if (ImGui::DragFloat3("Point Light Dir", spotLightDir, 0.001f, -1.0f, 1.0f))
-            {
-                testOBj.m_SpotLightBuffer.spotLightDir = XMFLOAT4(spotLightDir[0], spotLightDir[1], spotLightDir[2], 1.0f);
-            }
-            if (ImGui::DragFloat("Spot Light Att", &SpotlightAtt, 0.001f))
-            {
-                testOBj.m_SpotLightBuffer.SpotlightAtt = FLOAT(SpotlightAtt);
-            }
-            if (ImGui::DragFloat("Spot Light Inner", &spotLightInner, 0.001f))
-            {
-                testOBj.m_SpotLightBuffer.spotLightInner = FLOAT(spotLightInner);
-            }
-            if (ImGui::DragFloat("Spot Light Outer", &spotLightOutner, 0.001f))
-            {
-                testOBj.m_SpotLightBuffer.spotLightOutner = FLOAT(spotLightOutner);
-            }
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("Ambient Light"))
-        {
-            // ------------------------------ Ambient Light ------------------------------ //
-            static float ambientColor[3]{ 1.0f, 1.0f, 1.0f };
-            static float n1[3]{ 1.0f, 1.0f, 1.0f }; //this is nothing
-            static float kAmbient = 0.5f;
-
-            testOBj.m_AmbientLightBuffer.ambientColor = XMFLOAT4(ambientColor[0], ambientColor[1], ambientColor[2], 1.0f);
-            testOBj.m_AmbientLightBuffer.kAmbient = FLOAT(kAmbient);
-
-            if (ImGui::DragFloat3("Ambient Color", ambientColor, 0.001f, -1.0f, 1.0f))
-            {
-                testOBj.m_AmbientLightBuffer.ambientColor = XMFLOAT4(ambientColor[0], ambientColor[1], ambientColor[2], 1.0f);
-            }
-            if (ImGui::DragFloat("kAmbient", &kAmbient, 0.001f, -1.0f, 1.0f))
-            {
-                testOBj.m_AmbientLightBuffer.kAmbient = FLOAT(kAmbient);
-            }
-
-            ImGui::EndMenu();
-        }
-
+		if (ImGui::BeginTabBar("0")) {
+			ImGui::EndTabBar();
+		}        
         ImGui::End();
     }
+
+
+
 
     if (ImGui::Begin("Mesh", nullptr))
     {

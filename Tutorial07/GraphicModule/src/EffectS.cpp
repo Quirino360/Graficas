@@ -76,7 +76,8 @@ namespace GraphicsModule
 		//then create the shader with the passes you want, with all the posible passes
 		for (int i = 0; i < vTechniques.size(); i++)
 		{
-			vTechniques[i].CreatePass("DX11LightVertex.fx", "DX11LightPixel.fx");
+			vTechniques[i].CreatePass("DefaultVertexShader.fx", "DefaultPixelShader.fx");
+			//vTechniques[i].CreatePass("DX11LightVertex.fx", "DX11LightPixel.fx");
 		}
 	}
 

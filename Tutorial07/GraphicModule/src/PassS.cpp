@@ -16,6 +16,5 @@ namespace GraphicsModule
         shaders.push_back(Shader());
         unsigned int count = shaders.size() - 1;
 		shaders[count].CompileCreateShadersFromString(_vertexShader, _pixelShader);
-		       
 	}
 }

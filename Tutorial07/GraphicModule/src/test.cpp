@@ -25,9 +25,6 @@ namespace GraphicsModule
             
         
         RenderTargetV = new RenderTargetView();
-        //RenderTargetView2 = new RenderTargetView();
-        //RenderTargetView3 = new RenderTargetView();
-        //RenderTargetView4 = new RenderTargetView();
         g_pDepthStencilView = new DepthStencilView();
 
 #endif 
@@ -40,8 +37,6 @@ namespace GraphicsModule
 #if defined(DX11)
 
         InitVariables();
-
-
 
         m_hwnd = _hwnd;
 
@@ -690,11 +685,6 @@ namespace GraphicsModule
 
         if (g_pVertexBuffer->getyBufferDX11()) g_pVertexBuffer->ReleaseDX11();
         if (g_pIndexBuffer->getyBufferDX11()) g_pIndexBuffer->ReleaseDX11();
-
-        
-        if (shader.g_pVertexLayout) shader.g_pVertexLayout->Release();
-        if (shader.g_pVertexShader) shader.g_pVertexShader->Release();
-        if (shader.g_pPixelShader) shader.g_pPixelShader->Release();
 
         if (Texture->getTextureDX11()) Texture->ReleaseDX11();
 
