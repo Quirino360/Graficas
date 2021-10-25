@@ -249,6 +249,8 @@ HRESULT InitImgUI()
     return S_OK;
 }
 
+const unsigned int iTextSize = 9999;
+char* iText = new char[iTextSize];
 
 void UIRender()
 {
@@ -316,9 +318,10 @@ void UIRender()
             ImGui::EndCombo();
 		}
 
-		if (ImGui::BeginTabBar("0")) {
-			ImGui::EndTabBar();
-		}        
+        ImGui::Separator();
+
+        ImGui::InputTextMultiline("Buffer", iText, iTextSize, ImVec2(250, 500));
+
         ImGui::End();
     }
 
@@ -436,6 +439,13 @@ void Render()
 int main()
 {
 #if defined(DX11)
+    
+    for (int i = 0; i < iTextSize; i++)
+    {
+        iText[i] = NULL;
+    }
+
+
     // create the window and console
     if (FAILED(InitWindow(1080, 720)))
     {
