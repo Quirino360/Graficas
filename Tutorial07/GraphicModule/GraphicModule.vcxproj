@@ -558,6 +558,7 @@
     <ClInclude Include="include\RenderTargetView.h" />
     <ClInclude Include="include\Resource.h" />
     <ClInclude Include="include\Shader.h" />
+    <ClInclude Include="include\Structs.h" />
     <ClInclude Include="include\TechniqueS.h" />
     <ClInclude Include="include\test.h" />
     <ClInclude Include="include\Texture2D.h" />
@@ -579,6 +580,7 @@
     <ClCompile Include="src\RenderManager.cpp" />
     <ClCompile Include="src\RenderTargetView.cpp" />
     <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\Structs.cpp" />
     <ClCompile Include="src\TechniqueS.cpp" />
     <ClCompile Include="src\test.cpp" />
     <ClCompile Include="src\Texture2D.cpp" />

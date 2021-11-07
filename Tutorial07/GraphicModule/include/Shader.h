@@ -80,5 +80,7 @@ namespace GraphicsModule
     private:
         void checkCompileErrors(unsigned int shader, std::string type);
 #endif
+
+        //std::string GetShaderAsString();
     };
 }

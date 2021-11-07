@@ -44,10 +44,10 @@ namespace GraphicsModule
 
         RECT rc;
         GetClientRect(m_hwnd, &rc);
-        UINT width = rc.right - rc.left;
-        UINT height = rc.bottom - rc.top;
+        unsigned int width = rc.right - rc.left;
+        unsigned int height = rc.bottom - rc.top;
 
-        UINT createDeviceFlags = 0;
+        unsigned int createDeviceFlags = 0;
 #ifdef _DEBUG
         createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
@@ -58,7 +58,7 @@ namespace GraphicsModule
             D3D_DRIVER_TYPE_WARP,
             D3D_DRIVER_TYPE_REFERENCE,
         };
-        UINT numDriverTypes = ARRAYSIZE(driverTypes);
+        unsigned int numDriverTypes = ARRAYSIZE(driverTypes);
 
         D3D_FEATURE_LEVEL featureLevels[] =
         {
@@ -66,7 +66,7 @@ namespace GraphicsModule
             D3D_FEATURE_LEVEL_10_1,
             D3D_FEATURE_LEVEL_10_0,
         };
-        UINT numFeatureLevels = ARRAYSIZE(featureLevels);
+        unsigned int numFeatureLevels = ARRAYSIZE(featureLevels);
 
         DXGI_SWAP_CHAIN_DESC sd;
         ZeroMemory(&sd, sizeof(sd));
@@ -82,7 +82,7 @@ namespace GraphicsModule
         sd.SampleDesc.Quality = 0;
         sd.Windowed = TRUE;
 
-        for (UINT driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++)
+        for (unsigned int driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++)
         {
             g_driverType = driverTypes[driverTypeIndex];
             hr = renderManager.CreateDeviceAndSwapChainDX11(NULL, g_driverType, NULL, createDeviceFlags, featureLevels, numFeatureLevels,
@@ -137,16 +137,6 @@ namespace GraphicsModule
         if (FAILED(hr))
             return hr;
 
-        /*// and the resource view for the shader
-        D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-        ZeroMemory(&srvDesc, sizeof(srvDesc));
-        srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
-        srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-        srvDesc.Texture2D.MipLevels = 1; // same as orig texture
-        hr = renderManager.CreateShaderResourceViewDX11(Texture->getTextureDX11(), &srvDesc, &ShaderResourceView);
-        if (FAILED(hr))
-            return hr;*/
-
         renderManager.OMSetRenderTargetsDX11(1, &RenderTargetV->getRenderTargetViewDX11(), g_pDepthStencilView->getyDepthStencilViewDX11());
 
         //Set the viewport
@@ -161,7 +151,7 @@ namespace GraphicsModule
         renderManager.RSSetViewportsDX11(1, reinterpret_cast<D3D11_VIEWPORT*>(&vp));
 
         
-        m_effect.CreateAllTechniques();
+        //m_effect.CreateAllTechniques();
         m_effect.CreatePass();
         m_effect.SetActiveTechnique(NORMAL_TECHNIQUES::PIXEL_SHADER, SPECULAR_TECHNIQUES::BLINN_PHONG, TEXTURE_MAP_NORMAL);
         /**/
@@ -195,47 +185,7 @@ namespace GraphicsModule
         if (FAILED(hr))
             return hr;
 
-        // Create dir light buffer (b3)
-        bd.ByteWidth = sizeof(DirLight);
-        hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_DirLightBuffer->getyBufferDX11());
-        if (FAILED(hr))
-            return hr;
 
-        // Create point light buffer (b4)
-        bd.ByteWidth = sizeof(PointLight);
-        hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_PointLightBuffer->getyBufferDX11());
-        if (FAILED(hr))
-            return hr;
-
-        // Create spot light buffer (b5)
-        bd.ByteWidth = sizeof(spotLight);
-        hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_SpotLightBuffer->getyBufferDX11());
-        if (FAILED(hr))
-            return hr;
-
-        // Create ambient light buffer (b6)
-        bd.ByteWidth = sizeof(Ambient);
-        hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_AmbientLightBuffer->getyBufferDX11());
-        if (FAILED(hr))
-            return hr;
-
-        // Create Specular buffer (b7)
-        bd.ByteWidth = sizeof(Specular);
-        hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_SpecularBuffer->getyBufferDX11());
-        if (FAILED(hr))
-            return hr;
-
-        // Create Shinies buffer (b8)
-        bd.ByteWidth = sizeof(Shinies);
-        hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_ShiniesBuffer->getyBufferDX11());
-        if (FAILED(hr))
-            return hr;
-
-        // Create Diffuse buffer (b9)
-        bd.ByteWidth = sizeof(Diffuse);
-        hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_DiffuseBuffer->getyBufferDX11());
-        if (FAILED(hr))
-            return hr;
 
         // Load the Textures
         std::string textureString = "ZResorces//meshes//Gun//Textures//base_albedo.jpg";
@@ -278,8 +228,8 @@ namespace GraphicsModule
         if (FAILED(hr))
             return hr;/**/
 
-        // Initialize the world matrices
-        mesh.Init();
+        // Initialize the world matrix
+        g_World = XMMatrixIdentity();
 
         // Initialize the view matrix
         camera.setEye(0.0f, 3.0f, -6.0f);
@@ -287,12 +237,10 @@ namespace GraphicsModule
         camera.setUp(0.0f, 1.0f, 0.0f);
         camera.setViewMatrix();
 
+        // ----- View Matrix
         g_View = XMMATRIX(camera.getViewMatrix().matrix4);
-
-
-        cbNeverChanges cbNeverChanges;
-        cbNeverChanges.mView = XMMatrixTranspose(g_View);
-        renderManager.UpdateSubresourceDX11(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
+        m_cbNeverChanges.mView = XMMatrixTranspose(g_View);
+        renderManager.UpdateSubresourceDX11(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &m_cbNeverChanges, 0, 0);
 
         // Initialize the projection matrix
         camera.setMatrixPerspective(XM_PIDIV4, width / (FLOAT)height, 0.01f, 100.0f);
@@ -306,8 +254,8 @@ namespace GraphicsModule
             g_Projection = XMMATRIX(camera.getMatrixOrthographic().matrix4);
         }
 
-        cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
-        renderManager.UpdateSubresourceDX11(g_pCBChangeOnResize->getyBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
+        m_cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
+        renderManager.UpdateSubresourceDX11(g_pCBChangeOnResize->getyBufferDX11(), 0, NULL, &m_cbChangesOnResize, 0, 0);
 
         // create rasterizer state
         D3D11_RASTERIZER_DESC desc;
@@ -317,19 +265,6 @@ namespace GraphicsModule
         hr = renderManager.CreateRasterizerStateDX11(&desc, &g_Rasterizer);
         if (FAILED(hr))
             return hr;
-
-        m_SpecularBuffer.n2 = XMFLOAT3(1.0f, 1.0f, 1.0f);
-        m_SpecularBuffer.kSpecular = FLOAT(1.0f);
-        renderManager.UpdateSubresourceDX11(g_SpecularBuffer->getyBufferDX11(), 0, NULL, &m_SpecularBuffer, 0, 0);
-
-
-        m_ShiniesBuffer.n3 = XMFLOAT3(1.0f, 1.0f, 1.0f);
-        m_ShiniesBuffer.shininess = (60.0f);
-        renderManager.UpdateSubresourceDX11(g_ShiniesBuffer->getyBufferDX11(), 0, NULL, &m_ShiniesBuffer, 0, 0);
-
-        m_DiffuseBuffer.n4 = XMFLOAT3(1.0f, 1.0f, 1.0f);
-        m_DiffuseBuffer.kDiffuse = FLOAT(1.0f);
-        renderManager.UpdateSubresourceDX11(g_ShiniesBuffer->getyBufferDX11(), 0, NULL, &m_DiffuseBuffer, 0, 0);
 
 
 #elif defined(OGL)
@@ -521,36 +456,42 @@ namespace GraphicsModule
             t = (dwTimeCur - dwTimeStart) / 1000.0f;
         }
 
-        mesh.Update(renderManager, g_pCBChangesEveryFrame); //a mesh
 
-        renderManager.UpdateSubresourceDX11(g_DirLightBuffer->getyBufferDX11(), 0, NULL, &m_DirLightBuffer, 0, 0); // dir light
-        renderManager.UpdateSubresourceDX11(g_PointLightBuffer->getyBufferDX11(), 0, NULL, &m_PointLightBuffer, 0, 0); // point light
-        renderManager.UpdateSubresourceDX11(g_SpotLightBuffer->getyBufferDX11(), 0, NULL, &m_SpotLightBuffer, 0, 0); // spot light
-        renderManager.UpdateSubresourceDX11(g_AmbientLightBuffer->getyBufferDX11(), 0, NULL, &m_AmbientLightBuffer, 0, 0); // ambient light
-        renderManager.UpdateSubresourceDX11(g_SpecularBuffer->getyBufferDX11(), 0, NULL, &m_SpecularBuffer, 0, 0); // specular
-        renderManager.UpdateSubresourceDX11(g_ShiniesBuffer->getyBufferDX11(), 0, NULL, &m_ShiniesBuffer, 0, 0); // shinines
-        renderManager.UpdateSubresourceDX11(g_DiffuseBuffer->getyBufferDX11(), 0, NULL, &m_DiffuseBuffer, 0, 0); // diffuse
 
-        // ------------------------------ mouse shit ----------------------------------------- //
+        // Modify the color
+        XMFLOAT4 g_vMeshColor;
+        g_vMeshColor.x = 0.75;
+        g_vMeshColor.y = 0.75;
+        g_vMeshColor.z = 0.75;
+
+        //modify mesh in world
+        g_World = XMMatrixTranslation(mesh.position.getX(), mesh.position.getY(), mesh.position.getZ());
+        g_World *= XMMatrixRotationRollPitchYaw(mesh.rotation.getX(), mesh.rotation.getY(), mesh.rotation.getZ());
+        g_World *= XMMatrixScaling(mesh.scale.getX(), mesh.scale.getY(), mesh.scale.getZ());
+        m_cbChangesEveryFrame.mWorld = XMMatrixTranspose(g_World);
+        m_cbChangesEveryFrame.vMeshColor = g_vMeshColor;
+
+
+        // ----- mouse shit 
         *oldCursor = *newCursor;
         GetCursorPos(newCursor);
         camera.RotateCamera(Vector3(newCursor->x, newCursor->y, 0), Vector3(oldCursor->x, oldCursor->y, 0));
 
         if (true == mouseMove)
         {
-            cbNeverChanges cbNeverChanges;
-            cbNeverChanges.mView = XMMatrixTranspose(g_View);
-            renderManager.UpdateSubresourceDX11(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
+            m_cbNeverChanges.mView = XMMatrixTranspose(g_View);
+            renderManager.UpdateSubresourceDX11(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &m_cbNeverChanges, 0, 0);
 
-            cbChangeOnResize cbChangesOnResize;
-            cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
-            renderManager.UpdateSubresourceDX11(g_pCBChangeOnResize->getyBufferDX11(), 0, NULL, &cbChangesOnResize, 0, 0);
+            m_cbChangesOnResize.mProjection = XMMatrixTranspose(g_Projection);
+            renderManager.UpdateSubresourceDX11(g_pCBChangeOnResize->getyBufferDX11(), 0, NULL, &m_cbChangesOnResize, 0, 0);
 
             // Move the mouse updating the position
             g_View = XMMATRIX(camera.getViewMatrix().matrix4);
-            cbNeverChanges.mView = XMMatrixTranspose(g_View);
-            renderManager.UpdateSubresourceDX11(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &cbNeverChanges, 0, 0);
+            m_cbNeverChanges.mView = XMMatrixTranspose(g_View);
+            renderManager.UpdateSubresourceDX11(g_pCBNeverChanges->getyBufferDX11(), 0, NULL, &m_cbNeverChanges, 0, 0);
         }
+
+        renderManager.UpdateSubresourceDX11(g_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &m_cbChangesEveryFrame, 0, 0);
 
 #elif defined (OGL)
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -590,8 +531,8 @@ namespace GraphicsModule
     {
 #if defined(DX11)
         
-        UINT stride = sizeof(Vertex);
-        UINT offset = 0;
+        unsigned int stride = sizeof(Vertex);
+        unsigned int offset = 0;
 
         float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f }; // red, green, blue, alpha
 
@@ -619,14 +560,6 @@ namespace GraphicsModule
         renderManager.VSSetConstantBuffersDX11(0, 1, &g_pCBNeverChanges->getyBufferDX11());
         renderManager.VSSetConstantBuffersDX11(1, 1, &g_pCBChangeOnResize->getyBufferDX11());
         renderManager.VSSetConstantBuffersDX11(2, 1, &g_pCBChangesEveryFrame->getyBufferDX11());
-        renderManager.VSSetConstantBuffersDX11(3, 1, &g_DirLightBuffer->getyBufferDX11()); // vsset dir light
-        renderManager.VSSetConstantBuffersDX11(4, 1, &g_PointLightBuffer->getyBufferDX11()); // vsset point light
-        renderManager.VSSetConstantBuffersDX11(5, 1, &g_SpotLightBuffer->getyBufferDX11()); // vsset spot light
-        renderManager.VSSetConstantBuffersDX11(6, 1, &g_AmbientLightBuffer->getyBufferDX11()); // vsset ambient light
-        renderManager.VSSetConstantBuffersDX11(7, 1, &g_SpecularBuffer->getyBufferDX11()); // vsset specular
-        renderManager.VSSetConstantBuffersDX11(8, 1, &g_ShiniesBuffer->getyBufferDX11()); // vsset shinines
-        renderManager.VSSetConstantBuffersDX11(9, 1, &g_DiffuseBuffer->getyBufferDX11()); // vsset diffuse
-
 
         // -------------------- Pixel shader -------------------- //
         //renderManager.PSSetShaderDX11(shader.g_pPixelShader, NULL, 0); //pixel shader
@@ -634,13 +567,6 @@ namespace GraphicsModule
         renderManager.PSSetConstantBuffersDX11(0, 1, &g_pCBNeverChanges->getyBufferDX11());
         renderManager.PSSetConstantBuffersDX11(1, 1, &g_pCBChangeOnResize->getyBufferDX11());
         renderManager.PSSetConstantBuffersDX11(2, 1, &g_pCBChangesEveryFrame->getyBufferDX11());
-        renderManager.PSSetConstantBuffersDX11(3, 1, &g_DirLightBuffer->getyBufferDX11()); //vsset dirlight
-        renderManager.PSSetConstantBuffersDX11(4, 1, &g_PointLightBuffer->getyBufferDX11()); // vsset point light
-        renderManager.PSSetConstantBuffersDX11(5, 1, &g_SpotLightBuffer->getyBufferDX11()); // vsset spot light
-        renderManager.PSSetConstantBuffersDX11(6, 1, &g_AmbientLightBuffer->getyBufferDX11()); // vsset ambient light
-        renderManager.PSSetConstantBuffersDX11(7, 1, &g_SpecularBuffer->getyBufferDX11()); // vsset specular
-        renderManager.PSSetConstantBuffersDX11(8, 1, &g_ShiniesBuffer->getyBufferDX11()); // vsset shinines
-        renderManager.PSSetConstantBuffersDX11(9, 1, &g_DiffuseBuffer->getyBufferDX11()); // vsset diffuse
 
         renderManager.PSSetSamplersDX11(0, 1, &g_pSamplerLinear); // s0
         renderManager.PSSetSamplersDX11(1, 1, &sampnormalMap); // s1
@@ -674,14 +600,6 @@ namespace GraphicsModule
         if (g_pCBNeverChanges->getyBufferDX11()) g_pCBNeverChanges->ReleaseDX11();
         if (g_pCBChangeOnResize->getyBufferDX11()) g_pCBChangeOnResize->ReleaseDX11();
         if (g_pCBChangesEveryFrame->getyBufferDX11()) g_pCBChangesEveryFrame->ReleaseDX11();
-        if (g_DirLightBuffer->getyBufferDX11()) g_DirLightBuffer->ReleaseDX11(); //release dir light
-        if (g_PointLightBuffer->getyBufferDX11()) g_PointLightBuffer->ReleaseDX11(); //release point light
-        if (g_SpotLightBuffer->getyBufferDX11()) g_SpotLightBuffer->ReleaseDX11(); //release spot light
-        if (g_AmbientLightBuffer->getyBufferDX11()) g_AmbientLightBuffer->ReleaseDX11(); //release ambient light
-        if (g_SpecularBuffer->getyBufferDX11()) g_SpecularBuffer->ReleaseDX11(); //release specular
-        if (g_ShiniesBuffer->getyBufferDX11()) g_ShiniesBuffer->ReleaseDX11(); //release dshinines
-        if (g_DiffuseBuffer->getyBufferDX11()) g_DiffuseBuffer->ReleaseDX11(); //release diffuse
-
 
         if (g_pVertexBuffer->getyBufferDX11()) g_pVertexBuffer->ReleaseDX11();
         if (g_pIndexBuffer->getyBufferDX11()) g_pIndexBuffer->ReleaseDX11();

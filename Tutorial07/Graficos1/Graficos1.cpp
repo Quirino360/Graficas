@@ -186,7 +186,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 #endif
 
 
-#if defined(DX11)
+#if defined(DX11)   
 //
 HRESULT InitWindow(LONG _width, LONG _height)
 {
@@ -252,6 +252,12 @@ HRESULT InitImgUI()
 const unsigned int iTextSize = 9999;
 char* iText = new char[iTextSize];
 
+const unsigned int bufferNameSize = 9999;
+char* bufferName = new char[bufferNameSize];
+
+const unsigned int variablesTextSize = 9999;
+char* variablesText = new char[variablesTextSize];
+
 void UIRender()
 {
     auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
@@ -268,10 +274,152 @@ void UIRender()
     ImGui::NewFrame();
 
 #if defined(DX11)
+    // ---------- Variables
+    if (ImGui::Begin("Variables", nullptr))
+    {
+        bool changeUI = false;
+
+        ImGui::InputTextMultiline("BufferName", bufferName, bufferNameSize, ImVec2(200, 25));
+
+        if (ImGui::BeginCombo("", "Add Variable"))
+        {
+            if (ImGui::Button("Create Float4", ImVec2(175, 25)))
+            {
+                // -----
+                GraphicsModule::bFloat4 aux;
+                aux.name = bufferName;
+                testOBj.m_floats4.push_back(aux);
+
+                // -----
+                HRESULT hr = S_OK;
+                BUFFER_DESC_DX11 bd;
+                ZeroMemory(&bd, sizeof(bd));
+
+                bd.Usage = D3D11_USAGE_DEFAULT_DX11;
+                bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+                bd.CPUAccessFlags = 0;
+
+                bd.ByteWidth = sizeof(GraphicsModule::float4);
+                if (FAILED(testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &testOBj.m_floats4[testOBj.m_floats4.size() - 1].buffer.getyBufferDX11())))
+                    return;
+
+                changeUI = true;
+            }
+            if (ImGui::Button("Create Float3", ImVec2(175, 25)))
+            {
+                // -----
+                GraphicsModule::bFloat3 aux;
+                aux.name = bufferName;
+                testOBj.m_floats3.push_back(aux);
+
+                // -----
+                HRESULT hr = S_OK;
+                BUFFER_DESC_DX11 bd;
+                ZeroMemory(&bd, sizeof(bd));
+
+                bd.Usage = D3D11_USAGE_DEFAULT_DX11;
+                bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+                bd.CPUAccessFlags = 0;
+
+                bd.ByteWidth = sizeof(GraphicsModule::float3);
+                if (FAILED(testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &testOBj.m_floats3[testOBj.m_floats3.size() - 1].buffer.getyBufferDX11())))
+                    return;
+
+                changeUI = true;
+            }
+            if (ImGui::Button("Create Float2", ImVec2(175, 25)))
+            {
+                // -----
+                GraphicsModule::bFloat2 aux;
+                aux.name = bufferName;
+                testOBj.m_floats2.push_back(aux);
+
+                // -----
+                HRESULT hr = S_OK;
+                BUFFER_DESC_DX11 bd;
+                ZeroMemory(&bd, sizeof(bd));
+
+                bd.Usage = D3D11_USAGE_DEFAULT_DX11;
+                bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+                bd.CPUAccessFlags = 0;
+
+                bd.ByteWidth = sizeof(GraphicsModule::float2);
+                if (FAILED(testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &testOBj.m_floats2[testOBj.m_floats2.size() - 1].buffer.getyBufferDX11())))
+                    return;
+
+                changeUI = true;
+            }
+            if (ImGui::Button("Create Float", ImVec2(175, 25)))
+            {
+                // -----
+                GraphicsModule::bFloat aux;
+                aux.name = bufferName;
+                testOBj.m_floats.push_back(aux);
+
+                // -----
+                HRESULT hr = S_OK;
+                BUFFER_DESC_DX11 bd;
+                ZeroMemory(&bd, sizeof(bd));
+
+                bd.Usage = D3D11_USAGE_DEFAULT_DX11;
+                bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+                bd.CPUAccessFlags = 0;
+
+                bd.ByteWidth = sizeof(float);
+                if (FAILED(testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &testOBj.m_floats[testOBj.m_floats.size() - 1].buffer.getyBufferDX11())))
+                    return;
+
+                changeUI = true;
+            }
+
+            ImGui::EndCombo();
+        }
 
 
+        if (true == changeUI)
+        {
+            unsigned int textAux = 0;
+            // ----- Print all float 4
+            for (unsigned int i = 0; i < testOBj.m_floats4.size(); i++)
+            {
+                variablesText[textAux + 0] = 'f'; variablesText[textAux + 1] = 'l'; variablesText[textAux + 2] = 'o'; variablesText[textAux + 3] = 'a';
+                variablesText[textAux + 4] = 't'; variablesText[textAux + 5] = '4'; variablesText[textAux + 6] = ' ';
+                textAux += 7;
+                for (unsigned int j = 0; j < testOBj.m_floats4[i].name.size(); j++)
+                {
+                    variablesText[textAux] = testOBj.m_floats4[i].name[j];
+                    textAux++;
+                }
+                variablesText[textAux] = '\n';
+                textAux++;
+            }
+
+            // ----- Print all float 3
+            for (unsigned int i = 0; i < testOBj.m_floats3.size(); i++)
+            {
+                variablesText[textAux + 0] = 'f'; variablesText[textAux + 1] = 'l'; variablesText[textAux + 2] = 'o'; variablesText[textAux + 3] = 'a';
+                variablesText[textAux + 4] = 't'; variablesText[textAux + 5] = '3'; variablesText[textAux + 6] = ' ';
+                textAux += 7;
+                for (unsigned int j = 0; j < testOBj.m_floats3[i].name.size(); j++)
+                {
+                    variablesText[textAux] = testOBj.m_floats3[i].name[j];
+                    textAux++;
+                }
+                variablesText[textAux] = '\n';
+                textAux++;
+            }         
+        }
+
+        ImGui::InputTextMultiline("Variables", variablesText, variablesTextSize, ImVec2(250, 500));
+
+
+
+        ImGui::End();
+    }
+    // ---------- Shader Editor
     if (ImGui::Begin("WorkSpace", nullptr))
     {
+        // ----- Create default Shaders
 		if (ImGui::Button("Create Default Effect", ImVec2(175, 25)))
 		{
 			HRESULT hr = S_OK;
@@ -280,7 +428,7 @@ void UIRender()
 
 			testOBj.mesh.setVetices(testOBj.aLoadModel.getVertexData(), testOBj.aLoadModel.numVertex);
 
-			//D3D11_BUFFER_DESC bd;
+			// Vertex Buffer
 			ZeroMemory(&bd, sizeof(bd));
 			bd.Usage = D3D11_USAGE_DEFAULT_DX11;
 			bd.ByteWidth = sizeof(Vertex) * testOBj.aLoadModel.numVertex;
@@ -296,6 +444,7 @@ void UIRender()
 				return;
 			}
 
+            // Index Buffer
 			testOBj.mesh.setIndexBuffer(testOBj.aLoadModel.getIndexData()->data(), testOBj.aLoadModel.numIndices);
 			bd.Usage = D3D11_USAGE_DEFAULT_DX11;
 			bd.ByteWidth = sizeof(unsigned short) * testOBj.aLoadModel.numIndices;
@@ -308,8 +457,6 @@ void UIRender()
 				std::cout << "Error at CreateBufferDX11 &g_pIndexBuffer->getyBufferDX11(), in Graficos cpp" << std::endl;
 				return;
 			}
-
-
 		}
 
 		if (ImGui::BeginCombo("","Effect Work Space"))
@@ -320,17 +467,21 @@ void UIRender()
 
         ImGui::Separator();
 
+        // Buffer editor
         ImGui::InputTextMultiline("Buffer", iText, iTextSize, ImVec2(250, 500));
+
+        // Compile Buttom
+        if (ImGui::Button("Complie shader", ImVec2(175, 25)))
+        {
+
+        }
 
         ImGui::End();
     }
 
-
-
-
     if (ImGui::Begin("Mesh", nullptr))
     {
-        // ------------------------------ Open Object ------------------------------ //
+        // ---------- Open Object 
         if (ImGui::Button("Open file", ImVec2(75, 25)))
         {
             HRESULT hr = S_OK;
@@ -444,8 +595,15 @@ int main()
     {
         iText[i] = NULL;
     }
-
-
+    for (int i = 0; i < variablesTextSize; i++)
+    {
+        variablesText[i] = NULL;
+    }
+    for (int i = 0; i < bufferNameSize; i++)
+    {
+        bufferName[i] = NULL;
+    }
+    
     // create the window and console
     if (FAILED(InitWindow(1080, 720)))
     {

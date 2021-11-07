@@ -78,6 +78,9 @@
     <ClInclude Include="include\PassS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\Structs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\test.cpp">
@@ -132,6 +135,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\TechniqueS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Structs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

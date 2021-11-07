@@ -15,7 +15,6 @@ Buffer::~Buffer()
 		delete bufferDX11;
 		bufferDX11 = nullptr;
 	}
-	delete this;
 
 #endif
 }

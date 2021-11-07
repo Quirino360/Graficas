@@ -47,26 +47,29 @@ namespace GraphicsModule
 		EffectS();
 		~EffectS();
 
+		std::vector<TechniqueS> vTechniques;
 		unsigned int activeTechnique = 0;
 
 	private:
 
 
 	public:
-		void CreateAllTechniques();
+		void CreatePassFromString(std::string _vetexShader, std::string );
+		void CreatePassFromFile();
 		void CreatePass();
 
-		// ------------------------- Setters ------------------------- //
+		void CreateAllTechniques();
+
+		// ----- Setters 
 		void SetActiveTechnique(NORMAL_TECHNIQUES _normalTechnique, SPECULAR_TECHNIQUES _specularTecnique, int _textureMap);
 		void SetActiveTechnique(int n) { activeTechnique = n; };
 		
 
-		// ------------------------- Getters ------------------------- //
+		// ----- Getters 
 		TechniqueS GetActiveTechnique() { return vTechniques[activeTechnique]; };
 		Shader GetShader() { return vTechniques[activeTechnique].GetShader(); }
 
 	private:
 
-		std::vector<TechniqueS> vTechniques;
 	};
 }

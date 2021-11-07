@@ -1,7 +1,8 @@
 #pragma once
 #include <windows.h>
 #include "AssimpLoadModel.h"
-
+#include <vector>
+#include <map>
 
 #if defined(OGL) || defined(DX11)
 #include <FreeImage.h>
@@ -33,109 +34,41 @@
 #include "DepthStencilView.h"
 #include "Shader.h"
 
+#include "Structs.h"
 
-namespace GraphicsModule
+namespace GraphicsModule 
 {
-
-    struct VIEWPORT
-    {
-#if defined(DX11)
-        FLOAT TopLeftX;
-        FLOAT TopLeftY;
-        FLOAT Width;
-        FLOAT Height;
-        FLOAT MinDepth;
-        FLOAT MaxDepth;
-#endif
-    };
-
-    // -------------------- Buffers --------------------//
-    struct cbNeverChanges // b0
-    {
-#if defined(DX11)
-        XMMATRIX mView;
-#endif
-    };
-
-    struct cbChangeOnResize // b1
-    {
-#if defined(DX11)
-        XMMATRIX mProjection;
-#endif
-    };
-
-    // cbChangesEveryFrame b2 (it in a class I dont Remember, i think mesh)
-
-    struct DirLight // b3
-    {
-#if defined(DX11)
-        XMFLOAT4 dir;
-        XMFLOAT4 lightDirColor;
-#endif
-    };
-
-    struct PointLight // b4
-    {
-#if defined(DX11)
-        XMFLOAT4 pointLightColor;
-        XMFLOAT3 pointLightPos;
-        FLOAT  pointLightAtt;
-#endif
-    };
-
-    struct spotLight // b5
-    {
-#if defined(DX11)
-        XMFLOAT4 spotLightColor;
-        XMFLOAT4 spotLightPos;
-        XMFLOAT4 spotLightDir;
-        FLOAT  SpotlightAtt;
-        FLOAT  spotLightInner;
-        FLOAT  spotLightOutner;
-        FLOAT  n;
-#endif
-    };
-
-    struct Ambient // b6
-    {
-#if defined(DX11)
-        XMFLOAT4 ambientColor;
-        XMFLOAT3 n1;
-        FLOAT kAmbient;
-#endif
-    };
-
-    struct Specular // b7
-    {
-#if defined(DX11)
-        XMFLOAT3 n2;
-        FLOAT kSpecular;
-#endif
-    };
-
- //#if defined(PHONG) || defined(BLINN_PHONG)
-    struct Shinies // b8
-    {
-#if defined(DX11)
-        XMFLOAT3 n3;
-        FLOAT shininess;
-#endif
-    };
-
-    struct Diffuse // b9
-    {
-#if defined(DX11)
-        XMFLOAT3 n4;
-        FLOAT kDiffuse;
-#endif
-    };
-
     class test
     {
     public:
 #if defined(DX11)
         
+        // New Shit
         EffectS m_effect;
+
+        std::vector<Buffer> g_buffers;
+        std::vector<bMatrix> m_matrix;
+                                                           
+        std::vector<bFloat4> m_floats4;
+        std::vector<bFloat3> m_floats3;
+        std::vector<bFloat2> m_floats2;
+        std::vector<bFloat> m_floats;
+
+        std::vector<bInt4> m_ints4;
+        std::vector<bInt3> m_ints3;
+        std::vector<bInt2> m_ints2;
+        std::vector<bInt> m_ints;
+
+        std::vector<bBool> m_bools;
+
+        std::vector<bResourceView> m_resourceViews; // Textures (ej. t0) // Estos son buffers
+        std::vector<bSampler> mSamplers; // Samplers (ej. s0) // Estos son buffers
+        std::vector<bRenderTarget> renderTargetsView;
+        
+        //std::vector<StreamMap> m_streamMaps; // InputLayout
+
+
+        // Effect pass and 
 
         D3D_DRIVER_TYPE                     g_driverType = D3D_DRIVER_TYPE_NULL;
         D3D_FEATURE_LEVEL                   g_featureLevel = D3D_FEATURE_LEVEL_11_0;
@@ -152,23 +85,30 @@ namespace GraphicsModule
         ID3D11SamplerState* sampnormalMap = NULL;  //s1
         ID3D11SamplerState* samplerSpecular = NULL;  //s2
 
-        XMMATRIX                            g_View;
-        XMMATRIX                            g_Projection;
+        // ----- Matrices
+        XMMATRIX g_World;
+        XMMATRIX g_View;
+        XMMATRIX g_Projection;
 
         ID3D11RasterizerState* g_Rasterizer = NULL;
 
-        //---------------------------------   Buffers   ---------------------------------//
+        // ----------   Buffers
         Buffer* g_pVertexBuffer = nullptr; //
         Buffer* g_pIndexBuffer = nullptr; //
 
-        Buffer* g_pCBNeverChanges = nullptr; // b0
+        // View
+        Buffer* g_pCBNeverChanges = nullptr; // b0 
+        cbNeverChanges m_cbNeverChanges; 
 
+        // Projection
         Buffer* g_pCBChangeOnResize = nullptr; // b1
-        cbChangeOnResize cbChangesOnResize;
+        cbChangeOnResize m_cbChangesOnResize;
 
+        // World
         Buffer* g_pCBChangesEveryFrame = nullptr; // b2
+        CBChangesEveryFrame m_cbChangesEveryFrame;
 
-        //---------------------------------  Light Buffers    ---------------------------------//
+        // -----  Light Buffers
         Buffer* g_DirLightBuffer = nullptr; // b3
         DirLight m_DirLightBuffer;
 
@@ -190,8 +130,9 @@ namespace GraphicsModule
         Buffer* g_DiffuseBuffer = nullptr; // b9
         Diffuse m_DiffuseBuffer;
 
-
+        // Load model with assimp
         AssimpLoadModel aLoadModel;
+
         Camera                              camera;
         Mesh                                mesh;
         bool                                cameraChange = true;
@@ -199,13 +140,12 @@ namespace GraphicsModule
         LPPOINT                             newCursor = new POINT();
         LPPOINT                             oldCursor = new POINT();
 
-        // -------------------------------------------------------- Inlcuion de texturas ---------------------------------------------------- //
-        //ID3D11ShaderResourceView* ShaderResourceView = NULL;
-        Texture2D* Texture = nullptr; //
+        // ----- Textures
+        Texture2D* Texture = nullptr; 
 
-        ID3D11ShaderResourceView* ResourceViewAlbedo = NULL; //t0
-        ID3D11ShaderResourceView* ResourceViewNormal = NULL; //t1 
-        ID3D11ShaderResourceView* ResourceViewSpecular = NULL; //t2
+        ID3D11ShaderResourceView* ResourceViewAlbedo = nullptr; //t0
+        ID3D11ShaderResourceView* ResourceViewNormal = nullptr; //t1 
+        ID3D11ShaderResourceView* ResourceViewSpecular = nullptr; //t2
 
         RenderTargetView* RenderTargetV = NULL;
 

@@ -42,6 +42,8 @@ void Mesh::Update(RenderManager& _rManager, Buffer*& _pCBChangesEveryFrame)
 {
 #if defined (DX11)
 
+
+
 	_rManager.UpdateSubresourceDX11(_pCBChangesEveryFrame->getyBufferDX11(), 0, NULL, &cb, 0, 0);
 
 	// Modify the color

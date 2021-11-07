@@ -7,7 +7,7 @@
 
 
 #if defined(DX11)
-enum D3D11_USAGE_DX11
+enum USAGE_DX11
 {
     D3D11_USAGE_DEFAULT_DX11 = 0,
     D3D11_USAGE_IMMUTABLE_DX11,
@@ -18,7 +18,7 @@ enum D3D11_USAGE_DX11
 struct BUFFER_DESC_DX11
 {
     unsigned int ByteWidth;
-    D3D11_USAGE_DX11 Usage;
+    USAGE_DX11 Usage;
     unsigned BindFlags;
     unsigned CPUAccessFlags;
     unsigned MiscFlags;
