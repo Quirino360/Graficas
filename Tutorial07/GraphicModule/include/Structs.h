@@ -69,6 +69,8 @@ namespace GraphicsModule {
             z = Float3.z;
             return *this;
         }
+    private:
+        float NA = 0.0f;
     };
 
     struct float2
@@ -90,6 +92,8 @@ namespace GraphicsModule {
             y = Float2.y;
             return *this;
         }
+        float NA = 0.0f;
+        float NA2 = 0.0f;
     };
 
     struct int4 {
@@ -314,7 +318,13 @@ namespace GraphicsModule {
 #endif
     };
 
-    // cbChangesEveryFrame b2 (it in a class I dont Remember, i think mesh)
+    struct CBChangesEveryFrame
+    {
+#if defined(DX11)
+        XMMATRIX mWorld;
+        XMFLOAT4 vMeshColor;
+#endif
+    };
 
     struct DirLight // b3
     {

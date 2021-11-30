@@ -545,6 +545,7 @@
   <ItemGroup>
     <ClInclude Include="include\AssimpLoadModel.h" />
     <ClInclude Include="include\Buffer.h" />
+    <ClInclude Include="include\BufferManager.h" />
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\DepthStencilView.h" />
     <ClInclude Include="include\Device.h" />
@@ -569,6 +570,7 @@
   <ItemGroup>
     <ClCompile Include="src\AssimpLoadModel.cpp" />
     <ClCompile Include="src\Buffer.cpp" />
+    <ClCompile Include="src\BufferManager.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\DepthStencilView.cpp" />
     <ClCompile Include="src\Device.cpp" />

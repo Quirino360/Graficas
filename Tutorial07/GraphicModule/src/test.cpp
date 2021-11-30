@@ -95,14 +95,14 @@ namespace GraphicsModule
         if (FAILED(hr))
             return hr;
 
-        // Create a render target view
-        //ID3D11Texture2D* pBackBuffer = NULL;
+        // ---------- Create a render target view
+        // ----- Create texture
         Texture2D* pBackBuffer = new Texture2D();
-
-
         hr = renderManager.GetBufferDX11(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer->getTextureDX11());
         if (FAILED(hr))
             return hr;
+
+        // Create Render Target View
         hr = renderManager.CreateRenderTargetViewDX11(pBackBuffer->getTextureDX11(), NULL, &RenderTargetV->getRenderTargetViewDX11());
         pBackBuffer->getTextureDX11()->Release();
         if (FAILED(hr))
@@ -151,9 +151,9 @@ namespace GraphicsModule
         renderManager.RSSetViewportsDX11(1, reinterpret_cast<D3D11_VIEWPORT*>(&vp));
 
         
-        //m_effect.CreateAllTechniques();
-        m_effect.CreatePass();
-        m_effect.SetActiveTechnique(NORMAL_TECHNIQUES::PIXEL_SHADER, SPECULAR_TECHNIQUES::BLINN_PHONG, TEXTURE_MAP_NORMAL);
+        m_effects.CreateAllTechniques();
+        m_effects.CreatePassFromString("DefaultVertexShader.fx", "DefaultPixelShader.fx");
+        m_effects.SetActiveTechnique(NORMAL_TECHNIQUES::PIXEL_SHADER, SPECULAR_TECHNIQUES::BLINN_PHONG, TEXTURE_MAP_NORMAL);
         /**/
 
         // Set primitive topology
@@ -184,8 +184,6 @@ namespace GraphicsModule
         hr = renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &g_pCBChangesEveryFrame->getyBufferDX11());
         if (FAILED(hr))
             return hr;
-
-
 
         // Load the Textures
         std::string textureString = "ZResorces//meshes//Gun//Textures//base_albedo.jpg";
@@ -548,7 +546,7 @@ namespace GraphicsModule
         /**/
         
         //renderManager.IASetInputLayoutDX11(shader.g_pVertexLayout);
-        renderManager.IASetInputLayoutDX11(m_effect.GetShader().g_pVertexLayout);
+        renderManager.IASetInputLayoutDX11(m_effects.GetShader().g_pVertexLayout);
         renderManager.RSSetStateDX11(g_Rasterizer);
 
         renderManager.IASetVertexBuffersDX11(0, 1, &g_pVertexBuffer->getyBufferDX11(), &stride, &offset);//
@@ -556,14 +554,14 @@ namespace GraphicsModule
 
         // -------------------- Vertex shader -------------------- //
         //renderManager.VSSetShaderDX11(shader.g_pVertexShader, NULL, 0); //vertex shader
-        renderManager.VSSetShaderDX11(m_effect.GetShader().g_pVertexShader, NULL, 0); //vertex shader
+        renderManager.VSSetShaderDX11(m_effects.GetShader().g_pVertexShader, NULL, 0); //vertex shader
         renderManager.VSSetConstantBuffersDX11(0, 1, &g_pCBNeverChanges->getyBufferDX11());
         renderManager.VSSetConstantBuffersDX11(1, 1, &g_pCBChangeOnResize->getyBufferDX11());
         renderManager.VSSetConstantBuffersDX11(2, 1, &g_pCBChangesEveryFrame->getyBufferDX11());
 
         // -------------------- Pixel shader -------------------- //
         //renderManager.PSSetShaderDX11(shader.g_pPixelShader, NULL, 0); //pixel shader
-        renderManager.PSSetShaderDX11(m_effect.GetShader().g_pPixelShader, NULL, 0); //pixel shader
+        renderManager.PSSetShaderDX11(m_effects.GetShader().g_pPixelShader, NULL, 0); //pixel shader
         renderManager.PSSetConstantBuffersDX11(0, 1, &g_pCBNeverChanges->getyBufferDX11());
         renderManager.PSSetConstantBuffersDX11(1, 1, &g_pCBChangeOnResize->getyBufferDX11());
         renderManager.PSSetConstantBuffersDX11(2, 1, &g_pCBChangesEveryFrame->getyBufferDX11());

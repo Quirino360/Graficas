@@ -28,6 +28,7 @@
 #include "Camera.h"
 #include "Mesh.h"
 #include "Buffer.h"
+#include "BufferManager.h"
 #include "Texture2D.h"
 #include "RenderManager.h"
 #include "RenderTargetView.h"
@@ -44,34 +45,14 @@ namespace GraphicsModule
 #if defined(DX11)
         
         // New Shit
-        EffectS m_effect;
+        EffectS m_effects;
 
-        std::vector<Buffer> g_buffers;
-        std::vector<bMatrix> m_matrix;
-                                                           
-        std::vector<bFloat4> m_floats4;
-        std::vector<bFloat3> m_floats3;
-        std::vector<bFloat2> m_floats2;
-        std::vector<bFloat> m_floats;
-
-        std::vector<bInt4> m_ints4;
-        std::vector<bInt3> m_ints3;
-        std::vector<bInt2> m_ints2;
-        std::vector<bInt> m_ints;
-
-        std::vector<bBool> m_bools;
-
-        std::vector<bResourceView> m_resourceViews; // Textures (ej. t0) // Estos son buffers
-        std::vector<bSampler> mSamplers; // Samplers (ej. s0) // Estos son buffers
-        std::vector<bRenderTarget> renderTargetsView;
-        
+        BufferManager bufferManager;
         //std::vector<StreamMap> m_streamMaps; // InputLayout
 
-
         // Effect pass and 
-
-        D3D_DRIVER_TYPE                     g_driverType = D3D_DRIVER_TYPE_NULL;
-        D3D_FEATURE_LEVEL                   g_featureLevel = D3D_FEATURE_LEVEL_11_0;
+        D3D_DRIVER_TYPE g_driverType = D3D_DRIVER_TYPE_NULL;
+        D3D_FEATURE_LEVEL g_featureLevel = D3D_FEATURE_LEVEL_11_0;
 
         ID3D11Device* g_pd3dDevice = NULL;
         ID3D11DeviceContext* g_pImmediateContext = NULL;

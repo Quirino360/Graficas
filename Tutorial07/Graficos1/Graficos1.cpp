@@ -10,20 +10,17 @@
 #elif defined(OGL)
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_glfw.h"
-
 #endif
 
 #include "GraphicModule.h"
-
+#include "EditorManager.h"
 
 #include <iostream>
 #include <string>
 
 #include "imgui.h"
 
-
-
-// -----------------Global var-----------------------------------------------------------------
+// ----- Global var
 HWND g_hwnd;
 GraphicsModule::test MiObj;
 
@@ -40,7 +37,6 @@ GLfloat rotationY = 0.0f;
 #endif
 
 #if defined(DX11)
-//
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam);
 #endif
 
@@ -72,7 +68,6 @@ std::string OpenFileGetName(HWND owner = NULL)
 /**/
 
 #if defined(DX11)
-//
 LRESULT CALLBACK WndProc(HWND _hwnd, UINT _msg, WPARAM _wParam, LPARAM _lParam)
 {
 
@@ -187,7 +182,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 
 #if defined(DX11)   
-//
 HRESULT InitWindow(LONG _width, LONG _height)
 {
 
@@ -249,16 +243,10 @@ HRESULT InitImgUI()
     return S_OK;
 }
 
-const unsigned int iTextSize = 9999;
-char* iText = new char[iTextSize];
+EditorManager editManager;
 
-const unsigned int bufferNameSize = 9999;
-char* bufferName = new char[bufferNameSize];
 
-const unsigned int variablesTextSize = 9999;
-char* variablesText = new char[variablesTextSize];
-
-void UIRender()
+void RenderUI()
 {
     auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
     // Start the Dear ImGui frame
@@ -267,6 +255,8 @@ void UIRender()
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
 
+
+
 #elif defined(OGL)
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -274,277 +264,8 @@ void UIRender()
     ImGui::NewFrame();
 
 #if defined(DX11)
-    // ---------- Variables
-    if (ImGui::Begin("Variables", nullptr))
-    {
-        bool changeUI = false;
 
-        ImGui::InputTextMultiline("BufferName", bufferName, bufferNameSize, ImVec2(200, 25));
-
-        if (ImGui::BeginCombo("", "Add Variable"))
-        {
-            if (ImGui::Button("Create Float4", ImVec2(175, 25)))
-            {
-                // -----
-                GraphicsModule::bFloat4 aux;
-                aux.name = bufferName;
-                testOBj.m_floats4.push_back(aux);
-
-                // -----
-                HRESULT hr = S_OK;
-                BUFFER_DESC_DX11 bd;
-                ZeroMemory(&bd, sizeof(bd));
-
-                bd.Usage = D3D11_USAGE_DEFAULT_DX11;
-                bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-                bd.CPUAccessFlags = 0;
-
-                bd.ByteWidth = sizeof(GraphicsModule::float4);
-                if (FAILED(testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &testOBj.m_floats4[testOBj.m_floats4.size() - 1].buffer.getyBufferDX11())))
-                    return;
-
-                changeUI = true;
-            }
-            if (ImGui::Button("Create Float3", ImVec2(175, 25)))
-            {
-                // -----
-                GraphicsModule::bFloat3 aux;
-                aux.name = bufferName;
-                testOBj.m_floats3.push_back(aux);
-
-                // -----
-                HRESULT hr = S_OK;
-                BUFFER_DESC_DX11 bd;
-                ZeroMemory(&bd, sizeof(bd));
-
-                bd.Usage = D3D11_USAGE_DEFAULT_DX11;
-                bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-                bd.CPUAccessFlags = 0;
-
-                bd.ByteWidth = sizeof(GraphicsModule::float3);
-                if (FAILED(testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &testOBj.m_floats3[testOBj.m_floats3.size() - 1].buffer.getyBufferDX11())))
-                    return;
-
-                changeUI = true;
-            }
-            if (ImGui::Button("Create Float2", ImVec2(175, 25)))
-            {
-                // -----
-                GraphicsModule::bFloat2 aux;
-                aux.name = bufferName;
-                testOBj.m_floats2.push_back(aux);
-
-                // -----
-                HRESULT hr = S_OK;
-                BUFFER_DESC_DX11 bd;
-                ZeroMemory(&bd, sizeof(bd));
-
-                bd.Usage = D3D11_USAGE_DEFAULT_DX11;
-                bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-                bd.CPUAccessFlags = 0;
-
-                bd.ByteWidth = sizeof(GraphicsModule::float2);
-                if (FAILED(testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &testOBj.m_floats2[testOBj.m_floats2.size() - 1].buffer.getyBufferDX11())))
-                    return;
-
-                changeUI = true;
-            }
-            if (ImGui::Button("Create Float", ImVec2(175, 25)))
-            {
-                // -----
-                GraphicsModule::bFloat aux;
-                aux.name = bufferName;
-                testOBj.m_floats.push_back(aux);
-
-                // -----
-                HRESULT hr = S_OK;
-                BUFFER_DESC_DX11 bd;
-                ZeroMemory(&bd, sizeof(bd));
-
-                bd.Usage = D3D11_USAGE_DEFAULT_DX11;
-                bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-                bd.CPUAccessFlags = 0;
-
-                bd.ByteWidth = sizeof(float);
-                if (FAILED(testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), NULL, &testOBj.m_floats[testOBj.m_floats.size() - 1].buffer.getyBufferDX11())))
-                    return;
-
-                changeUI = true;
-            }
-
-            ImGui::EndCombo();
-        }
-
-
-        if (true == changeUI)
-        {
-            unsigned int textAux = 0;
-            // ----- Print all float 4
-            for (unsigned int i = 0; i < testOBj.m_floats4.size(); i++)
-            {
-                variablesText[textAux + 0] = 'f'; variablesText[textAux + 1] = 'l'; variablesText[textAux + 2] = 'o'; variablesText[textAux + 3] = 'a';
-                variablesText[textAux + 4] = 't'; variablesText[textAux + 5] = '4'; variablesText[textAux + 6] = ' ';
-                textAux += 7;
-                for (unsigned int j = 0; j < testOBj.m_floats4[i].name.size(); j++)
-                {
-                    variablesText[textAux] = testOBj.m_floats4[i].name[j];
-                    textAux++;
-                }
-                variablesText[textAux] = '\n';
-                textAux++;
-            }
-
-            // ----- Print all float 3
-            for (unsigned int i = 0; i < testOBj.m_floats3.size(); i++)
-            {
-                variablesText[textAux + 0] = 'f'; variablesText[textAux + 1] = 'l'; variablesText[textAux + 2] = 'o'; variablesText[textAux + 3] = 'a';
-                variablesText[textAux + 4] = 't'; variablesText[textAux + 5] = '3'; variablesText[textAux + 6] = ' ';
-                textAux += 7;
-                for (unsigned int j = 0; j < testOBj.m_floats3[i].name.size(); j++)
-                {
-                    variablesText[textAux] = testOBj.m_floats3[i].name[j];
-                    textAux++;
-                }
-                variablesText[textAux] = '\n';
-                textAux++;
-            }         
-        }
-
-        ImGui::InputTextMultiline("Variables", variablesText, variablesTextSize, ImVec2(250, 500));
-
-
-
-        ImGui::End();
-    }
-    // ---------- Shader Editor
-    if (ImGui::Begin("WorkSpace", nullptr))
-    {
-        // ----- Create default Shaders
-		if (ImGui::Button("Create Default Effect", ImVec2(175, 25)))
-		{
-			HRESULT hr = S_OK;
-			BUFFER_DESC_DX11 bd;
-			testOBj.aLoadModel.loadModel("ZResorces/meshes/Sphere/sphere.obj");
-
-			testOBj.mesh.setVetices(testOBj.aLoadModel.getVertexData(), testOBj.aLoadModel.numVertex);
-
-			// Vertex Buffer
-			ZeroMemory(&bd, sizeof(bd));
-			bd.Usage = D3D11_USAGE_DEFAULT_DX11;
-			bd.ByteWidth = sizeof(Vertex) * testOBj.aLoadModel.numVertex;
-			bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-			bd.CPUAccessFlags = 0;
-			D3D11_SUBRESOURCE_DATA InitData;
-			ZeroMemory(&InitData, sizeof(InitData));
-			InitData.pSysMem = testOBj.mesh.getVertices();
-			hr = testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), &InitData, &testOBj.g_pVertexBuffer->getyBufferDX11());
-			if (FAILED(hr))
-			{
-				std::cout << "Error at CreateBufferDX11 &g_pVertexBuffer->getyBufferDX11(), in Graficos cpp" << std::endl;
-				return;
-			}
-
-            // Index Buffer
-			testOBj.mesh.setIndexBuffer(testOBj.aLoadModel.getIndexData()->data(), testOBj.aLoadModel.numIndices);
-			bd.Usage = D3D11_USAGE_DEFAULT_DX11;
-			bd.ByteWidth = sizeof(unsigned short) * testOBj.aLoadModel.numIndices;
-			bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-			bd.CPUAccessFlags = 0;
-			InitData.pSysMem = testOBj.mesh.getIndexBuffer();
-			hr = testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), &InitData, &testOBj.g_pIndexBuffer->getyBufferDX11());
-			if (FAILED(hr))
-			{
-				std::cout << "Error at CreateBufferDX11 &g_pIndexBuffer->getyBufferDX11(), in Graficos cpp" << std::endl;
-				return;
-			}
-		}
-
-		if (ImGui::BeginCombo("","Effect Work Space"))
-		{
-
-            ImGui::EndCombo();
-		}
-
-        ImGui::Separator();
-
-        // Buffer editor
-        ImGui::InputTextMultiline("Buffer", iText, iTextSize, ImVec2(250, 500));
-
-        // Compile Buttom
-        if (ImGui::Button("Complie shader", ImVec2(175, 25)))
-        {
-
-        }
-
-        ImGui::End();
-    }
-
-    if (ImGui::Begin("Mesh", nullptr))
-    {
-        // ---------- Open Object 
-        if (ImGui::Button("Open file", ImVec2(75, 25)))
-        {
-            HRESULT hr = S_OK;
-            BUFFER_DESC_DX11 bd;
-            std::string fName = OpenFileGetName(g_hwnd);
-            testOBj.aLoadModel.loadModel(fName);
-
-            testOBj.mesh.setVetices(testOBj.aLoadModel.getVertexData(), testOBj.aLoadModel.numVertex);
-
-            //D3D11_BUFFER_DESC bd;
-            ZeroMemory(&bd, sizeof(bd));
-            bd.Usage = D3D11_USAGE_DEFAULT_DX11;
-            bd.ByteWidth = sizeof(Vertex) * testOBj.aLoadModel.numVertex;
-            bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-            bd.CPUAccessFlags = 0;
-            D3D11_SUBRESOURCE_DATA InitData;
-            ZeroMemory(&InitData, sizeof(InitData));
-            InitData.pSysMem = testOBj.mesh.getVertices();
-            hr = testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), &InitData, &testOBj.g_pVertexBuffer->getyBufferDX11());
-            if (FAILED(hr))
-            {
-                std::cout << "Error at CreateBufferDX11 &g_pVertexBuffer->getyBufferDX11(), in Graficos cpp" << std::endl;
-                return;
-            }
-
-            testOBj.mesh.setIndexBuffer(testOBj.aLoadModel.getIndexData()->data(), testOBj.aLoadModel.numIndices);
-            bd.Usage = D3D11_USAGE_DEFAULT_DX11;
-            bd.ByteWidth = sizeof(unsigned short) * testOBj.aLoadModel.numIndices;
-            bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-            bd.CPUAccessFlags = 0;
-            InitData.pSysMem = testOBj.mesh.getIndexBuffer();
-            hr = testOBj.renderManager.CreateBufferDX11(reinterpret_cast<D3D11_BUFFER_DESC*>(&bd), &InitData, &testOBj.g_pIndexBuffer->getyBufferDX11());
-            if (FAILED(hr))
-            {
-                std::cout << "Error at CreateBufferDX11 &g_pIndexBuffer->getyBufferDX11(), in Graficos cpp" << std::endl;
-                return;
-            }
-        }
-
-        // ------------------------------ Object Transform ------------------------------/
-        static float position[3]{ 0.0, 0.0, 0.0f };
-        static float rotation[3]{ 0.0f, 0, 0.0f };
-        static float scale[3]{ 1.0f, 1.0f, 1.0f };
-
-        testOBj.mesh.position = Vector3(position[0], position[1], position[2]);
-        testOBj.mesh.rotation = Vector3(rotation[0], rotation[1], rotation[2]);
-        testOBj.mesh.scale = Vector3(scale[0], scale[1], scale[2]);
-
-        if (ImGui::DragFloat3("Position", position, 0.1f))
-        {
-            testOBj.mesh.position = Vector3(position[0], position[1], position[2]);
-        }
-        if (ImGui::DragFloat3("Rotation", rotation, 0.1f))
-        {
-            testOBj.mesh.rotation = Vector3(rotation[0], rotation[1], rotation[2]);
-        }
-        if (ImGui::DragFloat3("Scale", scale, 0.1f))
-        {
-            testOBj.mesh.scale = Vector3(scale[0], scale[1], scale[2]);
-        }
-        ImGui::End();
-    }
-
+    editManager.RenderUI();
 
 #elif defined(OGL)
 ImGui::Begin("Demo window");
@@ -560,22 +281,47 @@ ImGui::End();
 #elif defined(OGL)
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 #endif
-
-
-
-
-
 }
 
 
+bool Init()
+{
+    auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
+
+    // create the window and console
+    if (FAILED(InitWindow(1080, 720)))
+    {
+        DestroyWindow(g_hwnd);
+        return false;
+    }
+
+    // create Graphic API interface
+    if (FAILED(testOBj.InitDevice(g_hwnd)))
+    {
+        testOBj.CleanupDevice();
+        return false;
+    }
+
+    // create UI
+    if (FAILED(InitImgUI()))
+    {
+        ImGui_ImplDX11_Shutdown();
+        ImGui_ImplWin32_Shutdown();
+        ImGui::DestroyContext();
+        return false;
+    }
+
+    editManager.Init();
+}
 
 void Render()
 {
     auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
     testOBj.Render();
+    editManager.RenderBuffers();
 
 #if defined(DX11) || defined(OGL)
-    UIRender();
+    RenderUI();
 #endif
 
 #if defined(DX11)
@@ -585,49 +331,38 @@ void Render()
 #endif
 }
 
+void Update()
+{
+    auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
+
+    testOBj.Update();
+    editManager.Update();
+}
+
+
+void CleanResources()
+{
+    auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
+
+    // clean resources
+    ImGui_ImplDX11_Shutdown();
+    ImGui_ImplWin32_Shutdown();
+    ImGui::DestroyContext();
+    testOBj.CleanupDevice();
+    DestroyWindow(g_hwnd);
+}
 
 //
 int main()
 {
 #if defined(DX11)
     
-    for (int i = 0; i < iTextSize; i++)
-    {
-        iText[i] = NULL;
-    }
-    for (int i = 0; i < variablesTextSize; i++)
-    {
-        variablesText[i] = NULL;
-    }
-    for (int i = 0; i < bufferNameSize; i++)
-    {
-        bufferName[i] = NULL;
-    }
-    
-    // create the window and console
-    if (FAILED(InitWindow(1080, 720)))
-    {
-        DestroyWindow(g_hwnd);
-        return 0;
-    }
-
     auto& testOBj = GraphicsModule::GetTestObj(g_hwnd);
-    // create Graphic API interface
-    if (FAILED(testOBj.InitDevice(g_hwnd)))
+
+    if (Init() == false)
     {
-        testOBj.CleanupDevice();
         return 0;
     }
-
-    // create UI
-    if (FAILED(InitImgUI()))
-    {
-        ImGui_ImplDX11_Shutdown();
-        ImGui_ImplWin32_Shutdown();
-        ImGui::DestroyContext();
-        return 0;
-    }
-
 
     // main loop
     MSG msg = { 0 };
@@ -640,19 +375,14 @@ int main()
         }
         else
         {
-            testOBj.Update();
+            Update();
             Render();
         }
     }
 
-
-    // clean resources
-    ImGui_ImplDX11_Shutdown();
-    ImGui_ImplWin32_Shutdown();
-    ImGui::DestroyContext();
-    testOBj.CleanupDevice();
-    DestroyWindow(g_hwnd);
+    CleanResources();
     return (int)msg.wParam;
+
 #elif defined(OGL)
 
     // glfw: initialize and configure

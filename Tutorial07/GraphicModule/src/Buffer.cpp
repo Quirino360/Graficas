@@ -1,20 +1,21 @@
 #include "Buffer.h"
 
+
 Buffer::Buffer()
 {
 #if defined(DX11)
-	bufferDX11 = nullptr;
+    bufferDX11 = nullptr;
 #endif
 }
 
 Buffer::~Buffer()
 {
 #if defined(DX11)
-	if (nullptr != bufferDX11)
-	{
-		delete bufferDX11;
-		bufferDX11 = nullptr;
-	}
+    if (nullptr != bufferDX11)
+    {
+            //delete bufferDX11;
+            //bufferDX11 = NULL;
+    }
 
 #endif
 }
@@ -22,7 +23,6 @@ Buffer::~Buffer()
 #if defined(DX11)
 void Buffer::ReleaseDX11()
 {
-	bufferDX11->Release();
-
+    bufferDX11->Release();
 }
 #endif

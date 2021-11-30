@@ -65,6 +65,21 @@ namespace GraphicsModule
 		}
 	}
 
+	void EffectS::CreatePassFromString(const char* _vetexShader, const char* _pixelShader)
+	{
+		//first create all techniques posibles
+		if (vTechniques.size() == 0)
+		{
+			CreateAllTechniques();
+		}
+
+		//then create the shader with the passes you want, with all the posible passes
+		for (int i = 0; i < vTechniques.size(); i++)
+		{
+			vTechniques[i].CreatePass(_vetexShader, _pixelShader);
+		}
+	}
+
 	void EffectS::CreatePass()
 	{
 		//first create all techniques posibles
@@ -91,4 +106,5 @@ namespace GraphicsModule
 			}
 		}
 	}
+
 }

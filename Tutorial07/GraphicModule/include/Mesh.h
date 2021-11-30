@@ -4,6 +4,7 @@
 #include <string>
 #include "Material.h"
 
+#include "Structs.h"
 #include "RenderManager.h"
 #include "RenderTargetView.h"
 #include "DepthStencilView.h"
@@ -44,13 +45,7 @@ struct Vertex
 #endif
 };
 
-struct CBChangesEveryFrame
-{
-#if defined(DX11)
-	XMMATRIX mWorld;
-	XMFLOAT4 vMeshColor;
-#endif
-};
+
 
 class Mesh
 {
@@ -59,7 +54,7 @@ public:
 	~Mesh();
 
 #if defined(DX11)
-	CBChangesEveryFrame cb;
+	GraphicsModule::CBChangesEveryFrame cb;
 
 	XMMATRIX                            g_World;
 	XMFLOAT4                            g_vMeshColor;

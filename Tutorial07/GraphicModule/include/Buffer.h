@@ -1,5 +1,4 @@
 #pragma once
-
 #if defined(DX11)
 #include <d3d11.h>
 #include <d3dx11.h>
@@ -26,24 +25,24 @@ struct BUFFER_DESC_DX11
 };
 #endif
 
+
 class Buffer
 {
 public:
+        Buffer();
+        ~Buffer();
 
-    Buffer();
-    ~Buffer();
-
-
+        
 private:
 
 #if defined(DX11)
     ID3D11Buffer* bufferDX11;
+
 #endif
 
 public:
 #if defined(DX11)
     ID3D11Buffer*& getyBufferDX11() { return bufferDX11; };
-
     void ReleaseDX11();
 #endif
 
